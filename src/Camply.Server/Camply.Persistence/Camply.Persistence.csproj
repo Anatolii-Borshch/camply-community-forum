@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Camply.Application\Camply.Application.csproj" />
       <ProjectReference Include="..\Camply.Domain\Camply.Domain.csproj" />
     </ItemGroup>
 

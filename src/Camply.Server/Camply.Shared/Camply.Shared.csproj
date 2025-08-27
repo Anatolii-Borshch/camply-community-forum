@@ -6,9 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Camply.Domain\Camply.Domain.csproj" />
-      <ProjectReference Include="..\Camply.Shared\Camply.Shared.csproj" />
-    </ItemGroup>
-
 </Project>

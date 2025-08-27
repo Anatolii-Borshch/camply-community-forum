@@ -7,8 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Camply.Application\Camply.Application.csproj" />
       <ProjectReference Include="..\Camply.Domain\Camply.Domain.csproj" />
       <ProjectReference Include="..\Camply.Shared\Camply.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
     </ItemGroup>
 
 </Project>
