@@ -1,4 +1,4 @@
-﻿namespace Camply.Shared.Dtos
+﻿namespace Camply.Shared.Dtos.User
 {
     public record UserRegisterDto(
         string Name,

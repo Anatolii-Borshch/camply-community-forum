@@ -14,6 +14,5 @@
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<SavedPost> SavedPosts { get; set; } = new List<SavedPost>();
         public virtual ICollection<LikedPost> LikedPosts { get; set; } = new List<LikedPost>();
-        public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
     }
 }

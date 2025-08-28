@@ -2,8 +2,8 @@
 {
     public class Tag : BaseEntity
     {
-        public string Name { get; private set; } = null!;
+        public string Name { get;  set; } = null!;
         
-        public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Forum> Forums { get; set; } = new List<Forum>();
     }
 }

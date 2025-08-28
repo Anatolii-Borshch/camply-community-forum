@@ -1,5 +1,6 @@
 ﻿using Camply.Application.Security;
 using Camply.Shared.Dtos;
+using Camply.Shared.Dtos.User;
 
 namespace Camply.Application.Contracts.Services
 {

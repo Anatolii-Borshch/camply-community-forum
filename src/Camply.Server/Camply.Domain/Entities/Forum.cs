@@ -11,5 +11,6 @@
         
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
         public virtual ICollection<Vote> Votes { get; set; } = new List<Vote>();
+        public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
     }
 }
