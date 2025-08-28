@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Camply.Persistence.Repositories
 {
-    public class ForumRepository : GenericRepository<Forum>, IForumRepository
+    public class ForumRepository : GenericRepository<Forum>, IForumRepository, ISpecifiedRepository<Forum>
     {
         public ForumRepository(CamplyDbContext context) : base(context)
         {

@@ -9,6 +9,9 @@ namespace Camply.Application.Specifications
         public Expression<Func<T, object>>? OrderBy { get; private set; }
         public Expression<Func<T, object>>? OrderByDescending { get; private set; }
 
+        public int? Skip { get; private set; }
+        public int? Take { get; private set; }
+        
         protected BaseSpecification(Expression<Func<T, bool>>? criteria = null)
         {
             Criteria = criteria;
@@ -22,6 +25,12 @@ namespace Camply.Application.Specifications
 
         protected void ApplyOrderByDescending(Expression<Func<T, object>> orderByDescendingExpression) 
             => OrderByDescending = orderByDescendingExpression;
+        
+        protected void ApplyPaging(int skip, int take)
+        {
+            Skip = skip;
+            Take = take;
+        }
     }
 
 }

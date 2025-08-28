@@ -34,6 +34,7 @@ namespace Camply.Application.Implementations
             return mappedForum;
         }
 
+        //TODO: Add pagging from specification
         public async Task<IEnumerable<ForumPrevievDto>> GetAllForums(ForumSearchRequest request)
         {
             var spec = new ForumSearchSpecification(request);
@@ -51,7 +52,6 @@ namespace Camply.Application.Implementations
 
         public async Task CreateForum(ForumCreateRequest request)
         {
-            // Validate request
             var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
