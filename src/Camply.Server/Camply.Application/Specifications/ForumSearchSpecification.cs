@@ -1,5 +1,6 @@
 ﻿using Camply.Domain.Entities;
 using Camply.Shared.Dtos;
+using Camply.Shared.Dtos.Forum;
 
 namespace Camply.Application.Specifications
 {

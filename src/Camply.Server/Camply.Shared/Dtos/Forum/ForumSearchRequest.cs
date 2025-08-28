@@ -1,4 +1,4 @@
-﻿namespace Camply.Shared.Dtos
+﻿namespace Camply.Shared.Dtos.Forum
 {
     public record ForumSearchRequest(
         string? Title = null,
