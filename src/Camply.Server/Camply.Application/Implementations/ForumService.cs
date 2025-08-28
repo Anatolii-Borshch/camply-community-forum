@@ -14,13 +14,15 @@ namespace Camply.Application.Implementations
         private readonly IForumRepository _forumRepository;
         private readonly IValidator<ForumCreateRequest> _createValidator;
         private readonly IValidator<ForumUpdateRequest> _updateValidator;
-        
+        private readonly ISpecifiedRepository<Forum> _specifiedRepository;
+
         public ForumService(IForumRepository forumRepository, IValidator<ForumCreateRequest> createValidator
-            , IValidator<ForumUpdateRequest> updateValidator)
+            , IValidator<ForumUpdateRequest> updateValidator, ISpecifiedRepository<Forum> specifiedRepository)
         {
             _forumRepository = forumRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _specifiedRepository = specifiedRepository;
         }
         
         public async Task<ForumDto> GetForumById(Guid id)
@@ -34,19 +36,13 @@ namespace Camply.Application.Implementations
             return mappedForum;
         }
 
-        //TODO: Add pagging from specification
         public async Task<IEnumerable<ForumPrevievDto>> GetAllForums(ForumSearchRequest request)
         {
             var spec = new ForumSearchSpecification(request);
 
-            var forums = await _forumRepository.ListAsync(spec);
+            var forums = await _specifiedRepository.ListAsync(spec);
 
-            var pagedForums = forums
-                .Skip(request.Skip)
-                .Take(request.Take)
-                .ToList();
-
-            var mappedForums = pagedForums.Select(x => x.MapToForumPreviewDto());
+            var mappedForums = forums.Select(x => x.MapToForumPreviewDto());
             return mappedForums;
         }
 
@@ -58,7 +54,6 @@ namespace Camply.Application.Implementations
 
             var forum = new Forum
             {
-                Id = Guid.NewGuid(),
                 Title = request.Title,
                 Description = request.Description,
                 AdminId = request.AdminId,

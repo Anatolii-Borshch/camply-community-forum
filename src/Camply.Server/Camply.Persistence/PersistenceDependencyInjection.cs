@@ -1,4 +1,5 @@
 ﻿using Camply.Application.Contracts.Repositories;
+using Camply.Domain.Entities;
 using Camply.Persistence.DbContext;
 using Camply.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,9 @@ namespace Camply.Persistence
             services.AddScoped<IUserVoteRepository, UserVoteRepository>();
             services.AddScoped<IVoteOptionRepository, VoteOptionRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
+
+            services.AddScoped<ISpecifiedRepository<Forum>, ForumRepository>();
+            services.AddScoped<ISpecifiedRepository<Post>, PostRepository>();
             
             services.AddDbContext<CamplyDbContext>(options =>
             {
