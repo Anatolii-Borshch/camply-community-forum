@@ -25,11 +25,12 @@ namespace Camply.Persistence
 
             services.AddScoped<ISpecifiedRepository<Forum>, ForumRepository>();
             services.AddScoped<ISpecifiedRepository<Post>, PostRepository>();
+            services.AddScoped<ISpecifiedRepository<Vote>, VoteRepository>();
             
             services.AddDbContext<CamplyDbContext>(options =>
             {
                 var connectionString = configuration.GetConnectionString("DbConnectionString");
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString).UseLazyLoadingProxies();
             });
             
             return services;

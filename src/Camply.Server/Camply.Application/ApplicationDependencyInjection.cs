@@ -4,6 +4,7 @@ using Camply.Application.Validators;
 using Camply.Shared.Dtos.Comment;
 using Camply.Shared.Dtos.Forum;
 using Camply.Shared.Dtos.Post;
+using Camply.Shared.Dtos.Vote;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,11 @@ namespace Camply.Application
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IValidator<PostCreateRequest>, PostCreateRequestValidator>();
             services.AddScoped<IValidator<PostUpdateRequest>, PostUpdateRequestValidator>();
+
+            services.AddScoped<IVoteService, VoteService>();
+            services.AddScoped<IValidator<VoteCreateRequest>, VoteCreateRequestValidator>();
+            services.AddScoped<IValidator<VoteUpdateRequest>, VoteUpdateRequestValidator>();
+            services.AddScoped< IValidator<VoteOptionUpdateRequest>, VoteOptionUpdateRequestValidator>();
                 
             return services;
         }
