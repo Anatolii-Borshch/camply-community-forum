@@ -1,5 +1,4 @@
-﻿using Camply.Domain.Entities;
-using Camply.Shared.Dtos.Post;
+﻿using Camply.Shared.Dtos.Post;
 
 namespace Camply.Application.Contracts.Services
 {
