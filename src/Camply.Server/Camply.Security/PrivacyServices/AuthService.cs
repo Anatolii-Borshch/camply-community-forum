@@ -3,7 +3,6 @@ using Camply.Application.Contracts.Repositories;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Security;
 using Camply.Domain.Entities;
-using Camply.Shared.Dtos;
 using Camply.Shared.Dtos.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
