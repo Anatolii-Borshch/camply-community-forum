@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
 using Camply.Application.Contracts.Repositories;
+using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Security;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.User;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 
 namespace Camply.Security.PrivacyServices
 {
@@ -52,7 +52,7 @@ namespace Camply.Security.PrivacyServices
 
             var validPassword = _passwordHasher.VerifyHashedPassword(user ,user.PasswordHash, userLoginDto.Password);
             
-            if (validPassword == PasswordVerificationResult.Failed)
+            if (!validPassword)
                 throw new UnauthorizedAccessException("Invalid credentials.");
 
             var token = _jwtProvider.GenerateToken(user);

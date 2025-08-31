@@ -12,22 +12,24 @@ namespace Camply.Persistence.Configurations
                 .HasMaxLength(50)
                 .IsRequired();
             
-            builder.HasMany<Forum>()
-                .WithMany(x => x.Tags)
+            builder.HasMany(t => t.Forums)
+                .WithMany(f => f.Tags)
                 .UsingEntity<Dictionary<string, object>>(
                     "ForumTags",
-                    x => x.HasOne<Forum>()
+                    j => j.HasOne<Forum>()
                         .WithMany()
                         .HasForeignKey("ForumId")
+                        .HasConstraintName("FK_ForumTags_Forum")
                         .OnDelete(DeleteBehavior.Cascade),
-                    x => x.HasOne<Tag>()
+                    j => j.HasOne<Tag>()
                         .WithMany()
                         .HasForeignKey("TagId")
+                        .HasConstraintName("FK_ForumTags_Tag")
                         .OnDelete(DeleteBehavior.Cascade),
-                    x =>
+                    j =>
                     {
-                        x.HasKey("ForumId", "TagId");
-                        x.ToTable("ForumTags");
+                        j.HasKey("ForumId", "TagId");
+                        j.ToTable("ForumTags");
                     });
         }
     }

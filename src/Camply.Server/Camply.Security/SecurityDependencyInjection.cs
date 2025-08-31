@@ -1,6 +1,8 @@
 ﻿using System.Text;
+using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Security;
+using Camply.Domain.Entities;
 using Camply.Security.Jwt;
 using Camply.Security.PrivacyServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,7 +20,8 @@ namespace Camply.Security
 
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<IAuthService, AuthService>();
-
+            services.AddScoped<IPasswordHasher<User>, MyPasswordHasher<User>>();
+            
             services.AddHttpContextAccessor();
 
             services.AddAuthentication(options => 

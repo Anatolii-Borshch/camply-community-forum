@@ -1,9 +1,9 @@
 ﻿using Camply.Application.Contracts.Repositories;
+using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Mappers;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.User;
-using Microsoft.AspNetCore.Identity;
 using FluentValidation;
 
 namespace Camply.Application.Implementations
@@ -75,7 +75,7 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("User not found");
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-            if (result == PasswordVerificationResult.Failed)
+            if (result)
                 throw new UnauthorizedAccessException("Invalid password");
 
             await _userRepository.DeleteAsync(user);
