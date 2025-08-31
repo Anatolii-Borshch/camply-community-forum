@@ -14,12 +14,12 @@ namespace Camply.Application.Mappers
             
             return new ForumDto(forum.Id, forum.Title, forum.Description
                 , postCount, existenceTime
-                , forum.Tags.Select(x => new TagDto(x.Name)).ToList());
+                , forum.Tags.Select(x => new TagDto(x.Id, x.Name)).ToList());
         }
         
         public static ForumPrevievDto MapToForumPreviewDto(this Forum forum)
         {
-            return new ForumPrevievDto(forum.Id, forum.Title, forum.Description, forum.Tags.Select(x => new TagDto(x.Name)).ToList());
+            return new ForumPrevievDto(forum.Id, forum.Title, forum.Description, forum.Tags.Select(x => new TagDto(x.Id, x.Name)).ToList());
         }
     }
 }

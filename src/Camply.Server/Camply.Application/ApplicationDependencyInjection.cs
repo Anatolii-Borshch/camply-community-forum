@@ -36,6 +36,8 @@ namespace Camply.Application
             services.AddScoped<IValidator<ResetPasswordRequest>, ResetPasswordRequestValidator>();
             services.AddScoped<IValidator<ProfileUpdateRequest>, ProfileUpdateRequestValidator>();
             services.AddScoped<IValidator<AccountDeleteRequest>, AccountDeleteRequestValidator>();
+
+            services.AddScoped<ITagService, TagService>();
             
             return services;
         }

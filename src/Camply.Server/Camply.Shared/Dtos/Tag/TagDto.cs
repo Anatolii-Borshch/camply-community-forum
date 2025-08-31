@@ -2,12 +2,13 @@
 {
     public class TagDto
     {
-        public TagDto(string name)
+        public TagDto(Guid id, string name)
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            
-            Name = name;
+            Id = id;            
         }
-        public string Name { get; set; } = null!;
+        
+        public Guid Id { get; set; } 
+        
+        public string Name { get; set; }
     }
 }

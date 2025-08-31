@@ -15,6 +15,6 @@ namespace Camply.Api.Models.Requests
 
         [Required]
         [MinLength(1, ErrorMessage = "At least one tag is required.")]
-        public List<string> Tags { get; set; } = new();
+        public List<Guid> Tags { get; set; } = new();
     }
 }

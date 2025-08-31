@@ -52,7 +52,7 @@ namespace Camply.Api.Controllers
         {
             var userId = _authService.UserId;
             
-            var forumRequest = new ForumCreateRequest(request.Title, request.Description, userId, request.Tags.Select(x => new TagDto(x)).ToList());
+            var forumRequest = new ForumCreateRequest(request.Title, request.Description, userId, request.Tags.Select(x => new TagDto(x, string.Empty)).ToList());
             
             await _forumService.CreateForum(forumRequest);
 
@@ -65,7 +65,7 @@ namespace Camply.Api.Controllers
         {
             var userId = _authService.UserId;
 
-            var forumRequest = new ForumUpdateRequest(id, request.Title, request.Description, userId, request.Tags.Select(x => new TagDto(x)).ToList());
+            var forumRequest = new ForumUpdateRequest(id, request.Title, request.Description, userId, request.TagsId.Select(x => new TagDto(x, string.Empty)).ToList());
 
             await _forumService.UpdateForum(forumRequest);
 

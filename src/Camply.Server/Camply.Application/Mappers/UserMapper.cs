@@ -22,7 +22,7 @@ namespace Camply.Application.Mappers
                         f.Id,
                         f.Title,
                         f.Description,
-                        f.Tags.Select(t => new TagDto(t.Name)).ToList()
+                        f.Tags.Select(t => new TagDto(t.Id, t.Name)).ToList()
                     ))
                     .ToList()
             };

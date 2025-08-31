@@ -15,14 +15,17 @@ namespace Camply.Application.Implementations
         private readonly IValidator<ForumCreateRequest> _createValidator;
         private readonly IValidator<ForumUpdateRequest> _updateValidator;
         private readonly ISpecifiedRepository<Forum> _specifiedRepository;
+        private readonly ITagRepository _tagRepository;
 
         public ForumService(IForumRepository forumRepository, IValidator<ForumCreateRequest> createValidator
-            , IValidator<ForumUpdateRequest> updateValidator, ISpecifiedRepository<Forum> specifiedRepository)
+            , IValidator<ForumUpdateRequest> updateValidator, ISpecifiedRepository<Forum> specifiedRepository
+            , ITagRepository tagRepository)
         {
             _forumRepository = forumRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _specifiedRepository = specifiedRepository;
+            _tagRepository = tagRepository;
         }
         
         public async Task<ForumDto> GetForumById(Guid id)
@@ -58,8 +61,17 @@ namespace Camply.Application.Implementations
                 Description = request.Description,
                 AdminId = request.AdminId,
                 CreatedDate = DateTime.UtcNow,
-                Tags = request.Tags.Select(t => new Tag { Name = t.Name }).ToList()
             };
+            
+            foreach (var tag in request.Tags)
+            {
+                var existedTag = await _tagRepository.GetByIdAsync(tag.Id);
+                
+                if(existedTag == null)
+                    throw new KeyNotFoundException($"Tag with id {tag.Id} not found.");
+                
+                forum.Tags.Add(existedTag);
+            }
 
             await _forumRepository.AddAsync(forum);
         }
@@ -76,9 +88,18 @@ namespace Camply.Application.Implementations
             
             forum.Title = request.Title;
             forum.Description = request.Description;
-
+            
             forum.Tags.Clear();
-            forum.Tags = request.Tags.Select(t => new Tag { Name = t.Name }).ToList();
+
+            foreach (var tag in request.Tags)
+            {
+                var existedTag = await _tagRepository.GetByIdAsync(tag.Id);
+                
+                if(existedTag == null)
+                    throw new KeyNotFoundException($"Tag with id {tag.Id} not found.");
+                
+                forum.Tags.Add(existedTag);
+            }
 
             await _forumRepository.UpdateAsync(forum);
         }
