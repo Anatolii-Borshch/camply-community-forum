@@ -23,17 +23,17 @@ namespace Camply.Persistence.Configurations
             builder.HasOne(x => x.User)
                 .WithMany(x => x.Comments)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
             
             builder.HasOne(x => x.Post)
                 .WithMany(x => x.Comments)
                 .HasForeignKey(x => x.PostId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             builder.HasOne(x => x.ParentComment)
                 .WithMany(x => x.Replies)
                 .HasForeignKey(x => x.ParentCommentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.ClientCascade);
         }
     }
 }

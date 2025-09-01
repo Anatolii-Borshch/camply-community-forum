@@ -51,7 +51,7 @@ namespace Camply.Application.Specifications
         private static Expression<Func<Post, bool>>? BuildCriteria(ForumPostsSearchRequest request)
         {
             return p =>
-                (request.ForumId == null || p.Id == request.ForumId) &&
+                (request.ForumId == null || p.ForumId == request.ForumId) &&
                 (request.AuthorId == null || p.UserId == request.AuthorId) &&
                 (string.IsNullOrEmpty(request.Title) || p.Title.Contains(request.Title)) &&
                 (request.IsPinned == null || p.IsPinned == request.IsPinned) &&

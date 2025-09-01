@@ -15,12 +15,11 @@ namespace Camply.Persistence.Configurations
             builder.HasOne(x => x.User)
                 .WithMany(x => x.LikedPosts)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-            
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.HasOne(x => x.Post)
                 .WithMany(x => x.LikedPosts)
-                .HasForeignKey(x => x.PostId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(x => x.PostId);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Camply.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/tag")]
-    [Authorize(Roles = RoleHelper.Admin)]
+    [Authorize(Roles = "Administrator")]
     public class TagController : ControllerBase
     {
         private readonly ITagService _tagService;

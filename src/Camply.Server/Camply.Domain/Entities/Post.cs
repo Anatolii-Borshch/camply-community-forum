@@ -8,8 +8,11 @@
         public string? Content { get; set; }
         public bool IsPinned { get; set; }
         
-        public Guid UserId { get; set; }
-        public virtual User User { get; set; } = null!;
+        public Guid? UserId { get; set; }
+        public virtual User? User { get; set; }
+        
+        public Guid ForumId { get; set; }
+        public virtual Forum Forum{ get; set; } = null!;
         
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<SavedPost> SavedPosts { get; set; } = new List<SavedPost>();

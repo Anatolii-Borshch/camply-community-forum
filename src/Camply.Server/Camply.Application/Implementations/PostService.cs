@@ -11,17 +11,24 @@ namespace Camply.Application.Implementations
     public class PostService : IPostService
     {
         private readonly IPostRepository _postRepository;
+        private readonly ISavedRepository _savedRepository;
+        private readonly ILikedPostRepository _likedPostRepository;
         private readonly ISpecifiedRepository<Post> _specification;
         private readonly IValidator<PostCreateRequest> _postCreateValidator;
         private readonly IValidator<PostUpdateRequest> _postUpdateValidator;
+        private readonly ICommentRepository _commentRepository;
 
         public PostService(IPostRepository postRepository, ISpecifiedRepository<Post> specification
-            , IValidator<PostCreateRequest> postCreateValidator, IValidator<PostUpdateRequest> postUpdateValidator)
+            , IValidator<PostCreateRequest> postCreateValidator, IValidator<PostUpdateRequest> postUpdateValidator
+            , ISavedRepository savedRepository, ILikedPostRepository likedPostRepository, ICommentRepository commentRepository)
         {
             _postRepository = postRepository;
             _specification = specification;
             _postCreateValidator = postCreateValidator;
             _postUpdateValidator = postUpdateValidator;
+            _savedRepository = savedRepository;
+            _likedPostRepository = likedPostRepository;
+            _commentRepository = commentRepository;
         }
         
         public async Task<IEnumerable<PostDto>> GetForumPostsAsync(ForumPostsSearchRequest request)
@@ -48,6 +55,7 @@ namespace Camply.Application.Implementations
                 UserId = request.AuthorId,
                 CreatedDate = DateTime.UtcNow,
                 ModifiedDate = DateTime.UtcNow,
+                ForumId = request.ForumId,
                 IsPinned = false
             };
 
@@ -75,12 +83,36 @@ namespace Camply.Application.Implementations
 
         public async Task DeletePost(Guid userId, Guid postId)
         {
-            var post = await _postRepository.GetByIdAsync(postId);
+            var post = await _postRepository.GetIncludedByIdAsync(postId,
+                x => x.LikedPosts,
+                x => x.SavedPosts);
 
             if (post == null || post.UserId != userId)
                 throw new UnauthorizedAccessException("You cannot delete this post.");
 
+            var comments = await _commentRepository.GetCommentsByPostIdAsync(postId, int.MaxValue);
+
+            foreach (var comment in comments)
+            {
+                await DeleteCommentRecursive(comment);
+            }
+            
             await _postRepository.DeleteAsync(post);
+        }
+
+        private async Task DeleteCommentRecursive(Comment comment)
+        {
+            var commentWithReplies = await _commentRepository.GetByIdWithRepliesAsync(comment.Id);
+
+            if (commentWithReplies?.Replies != null)
+            {
+                foreach (var reply in commentWithReplies.Replies)
+                {
+                    await DeleteCommentRecursive(reply);
+                }
+            }
+
+            await _commentRepository.DeleteAsync(commentWithReplies!);
         }
 
         public async Task<bool> PinPost(Guid userId, Guid postId)
@@ -98,41 +130,51 @@ namespace Camply.Application.Implementations
 
         public async Task<bool> LikePost(Guid userId, Guid postId)
         {
-            var post = await _postRepository.GetIncludedByIdAsync(postId, includes: x => x.LikedPosts);
+            var post = await _postRepository.GetByIdAsync(postId);
+            if (post == null)
+                throw new KeyNotFoundException("Post not found.");
 
-            if (post == null || post.UserId != userId)
-                throw new UnauthorizedAccessException("You cannot pin this post.");
-
-            var existing = post.LikedPosts.FirstOrDefault(x => x.UserId == userId);
+            var existing = await _likedPostRepository.GetByUserAndPostAsync(userId, postId);
             if (existing != null)
             {
-                post.LikedPosts.Remove(existing);
-                await _postRepository.UpdateAsync(post);
+                await _likedPostRepository.DeleteAsync(existing);
                 return false;
             }
 
-            post.LikedPosts.Add(new LikedPost { CreatedDate = DateTime.Now, PostId = postId, UserId = userId });
-            await _postRepository.UpdateAsync(post);
+            var likedPost = new LikedPost
+            {
+                PostId = postId,
+                UserId = userId,
+                CreatedDate = DateTime.UtcNow
+            };
+            
+            await _likedPostRepository.AddAsync(likedPost);
+
             return true;
         }
 
         public async Task<bool> SavePost(Guid userId, Guid postId)
         {
-            var post = await _postRepository.GetIncludedByIdAsync(postId, includes: x => x.SavedPosts);
+            var post = await _postRepository.GetByIdAsync(postId);
+            if (post == null)
+                throw new KeyNotFoundException("Post not found.");
 
-            if (post == null || post.UserId != userId)
-                throw new UnauthorizedAccessException("You cannot pin this post.");
-
-            var existing = post.SavedPosts.FirstOrDefault(x => x.UserId == userId);
+            var existing = await _savedRepository.GetByUserAndPostAsync(userId, postId);
             if (existing != null)
             {
-                post.SavedPosts.Remove(existing);
-                await _postRepository.UpdateAsync(post);
+                await _savedRepository.DeleteAsync(existing);
                 return false;
             }
 
-            post.SavedPosts.Add(new SavedPost { CreatedDate = DateTime.Now ,PostId = postId, UserId = userId });
-            await _postRepository.UpdateAsync(post);
+            var savedPost = new SavedPost
+            {
+                PostId = postId,
+                UserId = userId,
+                CreatedDate = DateTime.UtcNow
+            };
+            
+            await _savedRepository.AddAsync(savedPost);
+
             return true;
         }
     }

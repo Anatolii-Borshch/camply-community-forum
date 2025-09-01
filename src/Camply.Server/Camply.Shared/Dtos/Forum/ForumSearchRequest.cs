@@ -2,7 +2,7 @@
 {
     public record ForumSearchRequest(
         string? Title = null,
-        List<string>? Tags = null,
+        List<Guid>? Tags = null,
         int Skip = 0,
         int Take = 20
     );

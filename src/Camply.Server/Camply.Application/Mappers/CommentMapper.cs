@@ -8,7 +8,7 @@ namespace Camply.Application.Mappers
     {
         public static CommentDto MapToCommentDto(this Comment comment)
         {
-            var result = new CommentDto(comment.UserId, comment.Content
+            var result = new CommentDto(comment.Id, comment.Content
                 , comment.UserId, comment.User.Username, comment.ParentCommentId);
 
             result.TimeExisted = TimeHelper.GetTimeExisted(comment.CreatedDate);

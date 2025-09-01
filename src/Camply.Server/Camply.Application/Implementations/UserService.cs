@@ -54,7 +54,7 @@ namespace Camply.Application.Implementations
         {
             await _profileUpdateValidator.ValidateAndThrowAsync(request);
 
-            var user = await _userRepository.GetByEmailAsync(request.Username); 
+            var user = await _userRepository.GetByIdAsync(request.Id); 
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
@@ -75,7 +75,7 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("User not found");
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-            if (result)
+            if (!result)
                 throw new UnauthorizedAccessException("Invalid password");
 
             await _userRepository.DeleteAsync(user);

@@ -49,7 +49,7 @@ namespace Camply.Api.Controllers
         public async Task<ActionResult<ApiResponse>> CreatePost([FromBody] CreatePostRequest request)
         {
             var userId = _authService.UserId;
-            var newRequest = new PostCreateRequest(request.Title, request.Description, userId);
+            var newRequest = new PostCreateRequest(request.Title, request.Description, userId, request.ForumId);
             
             await _postService.CreatePost(newRequest);
             

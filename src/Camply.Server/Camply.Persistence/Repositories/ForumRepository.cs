@@ -27,6 +27,14 @@ namespace Camply.Persistence.Repositories
             else if (spec.OrderByDescending != null)
                 query = query.OrderByDescending(spec.OrderByDescending);
 
+            if (spec.Skip.HasValue)
+                query = query.Skip(spec.Skip.Value);
+
+            if (spec.Take.HasValue)
+                query = query.Take(spec.Take.Value);
+            
+            string sql = query.ToQueryString();
+            
             return await query.ToListAsync();
         }
 

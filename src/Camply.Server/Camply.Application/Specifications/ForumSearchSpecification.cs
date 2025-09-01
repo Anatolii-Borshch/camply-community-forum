@@ -9,7 +9,7 @@ namespace Camply.Application.Specifications
         public ForumSearchSpecification(ForumSearchRequest request)
             : base(f =>
                 (string.IsNullOrEmpty(request.Title) || f.Title.Contains(request.Title)) &&
-                (request.Tags == null || f.Tags.Any(t => request.Tags.Contains(t.Name)))
+                (request.Tags == null || !request.Tags.Any() || f.Tags.Any(t => request.Tags.Contains(t.Id)))
             )
         {
             AddInclude(f => f.Tags);

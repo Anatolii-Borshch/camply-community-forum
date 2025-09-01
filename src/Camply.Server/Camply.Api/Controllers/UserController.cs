@@ -40,11 +40,12 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(profile));
         }
 
-        [HttpPut("profile")]
+        [HttpPut]
         public async Task<ActionResult<ApiResponse>> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
             var userId = _authService.UserId;
             var updateRequest = new ProfileUpdateRequest(
+                userId,
                 request.Name,
                 request.Surname,
                 request.Birthday,
@@ -66,7 +67,7 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Password changed successfully"));
         }
 
-        [HttpDelete("account")]
+        [HttpDelete]
         public async Task<ActionResult<ApiResponse>> DeleteAccount([FromBody] DeleteAccountRequest request)
         {
             var userId = _authService.UserId;

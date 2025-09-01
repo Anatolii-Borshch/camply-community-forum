@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Claims;
+using System.Text;
 using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Security;
@@ -41,10 +42,13 @@ namespace Camply.Security
 
                         ValidIssuer = jwtOptions.Issuer,
                         ValidAudience = jwtOptions.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                        
+                        RoleClaimType = ClaimTypes.Role
                     };
                 });
-
+            services.AddAuthorization();
+            
             return services;
         }
     }

@@ -10,6 +10,6 @@ namespace Camply.Api.Models.Requests
         public string? Description { get; set; }
         
         [Required]
-        public Guid AuthorId { get; set; }
+        public Guid ForumId { get; set; }
     }
 }

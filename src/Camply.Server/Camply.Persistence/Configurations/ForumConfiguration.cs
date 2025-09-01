@@ -19,7 +19,7 @@ namespace Camply.Persistence.Configurations
             builder.HasOne(x => x.Admin)
                 .WithMany(x => x.Forums)
                 .HasForeignKey(x => x.AdminId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

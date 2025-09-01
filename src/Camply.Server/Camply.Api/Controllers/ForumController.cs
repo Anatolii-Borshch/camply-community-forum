@@ -28,7 +28,7 @@ namespace Camply.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<ForumPrevievDto>>>> GetForums(
             [FromQuery] string? title,
-            [FromQuery] List<string>? tags,
+            [FromQuery] List<Guid>? tags,
             [FromQuery] int skip = 0,
             [FromQuery] int take = 20)
         {
@@ -56,7 +56,7 @@ namespace Camply.Api.Controllers
             
             await _forumService.CreateForum(forumRequest);
 
-            return CreatedAtAction(nameof(GetForum), ApiResponse.Ok("Forum created successfully"));
+            return Ok(ApiResponse.Ok("Forum created successfully"));
         }
 
 

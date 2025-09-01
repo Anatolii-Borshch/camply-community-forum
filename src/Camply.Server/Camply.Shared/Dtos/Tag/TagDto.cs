@@ -4,7 +4,8 @@
     {
         public TagDto(Guid id, string name)
         {
-            Id = id;            
+            Id = id;
+            Name = name;
         }
         
         public Guid Id { get; set; } 

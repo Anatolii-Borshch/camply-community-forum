@@ -10,12 +10,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddPersistenceServices(builder.Configuration);
-builder.Services.AddSecurityServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 
 builder.Services.AddBearerSecurityScheme();
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(); 
+
+builder.Services.AddSecurityServices(builder.Configuration);
 
 var app = builder.Build();
 

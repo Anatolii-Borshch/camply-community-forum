@@ -7,8 +7,8 @@
         public string Title { get; set; } = null!;
         public string? Content { get; set; }
         public bool IsPinned { get; set; }
-        public string AuthorUsername { get; set; } = null!;
-        public Guid AuthorId { get; set; }
+        public string? AuthorUsername { get; set; }
+        public Guid? AuthorId { get; set; }
         public int Likes { get; set; }
         public int CommentsNumber { get; set; }
         public string ExistedTime { get; set; } = null!;
