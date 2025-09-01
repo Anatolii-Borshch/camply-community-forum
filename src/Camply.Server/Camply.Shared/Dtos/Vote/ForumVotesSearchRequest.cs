@@ -1,6 +1,7 @@
 ﻿namespace Camply.Shared.Dtos.Vote
 {
     public record ForumVotesSearchRequest(
+        Guid CurrentUserId,
         Guid? ForumId = null,
         Guid? AuthorId = null,
         Guid? VoteId = null,

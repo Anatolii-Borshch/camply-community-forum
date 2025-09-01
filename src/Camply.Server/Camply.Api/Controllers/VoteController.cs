@@ -30,7 +30,9 @@ namespace Camply.Api.Controllers
             [FromQuery] string? orderBy = null,
             [FromQuery] bool orderDescending = false)
         {
-            var request = new ForumVotesSearchRequest(forumId, authorId, voteId, title, skip, take, orderBy, orderDescending);
+            var userId = _authService.UserId;
+            
+            var request = new ForumVotesSearchRequest(userId ,forumId, authorId, voteId, title, skip, take, orderBy, orderDescending);
 
             var votes = await _voteService.GetForumVotesAsync(request);
             

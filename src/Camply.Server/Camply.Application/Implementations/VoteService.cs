@@ -37,7 +37,7 @@ namespace Camply.Application.Implementations
         {
             var spec = new VoteSearchSpecification(request);
             var votes = await _specification.ListAsync(spec);
-            var mappedVotes = votes.Select(x => x.MapToVoteDto());
+            var mappedVotes = votes.Select(x => x.MapToVoteDto(request.CurrentUserId));
             
             return mappedVotes;
         }
