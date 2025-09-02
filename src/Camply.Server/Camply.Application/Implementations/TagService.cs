@@ -2,33 +2,43 @@
 using Camply.Application.Contracts.Services;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Tag;
+using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
     public class TagService : ITagService
     {
         private readonly ITagRepository _tagRepository;
+        private readonly ILogger<TagService> _logger;
 
-        public TagService(ITagRepository tagRepository)
+        public TagService(ITagRepository tagRepository, ILogger<TagService> logger)
         {
             _tagRepository = tagRepository;
+            _logger = logger;
         }
         
         public async Task<IEnumerable<TagDto>> GetTagsAsync()
         {
+            _logger.LogInformation("Fetching all tags");
+            
             var tags = await _tagRepository.GetAllAsync();
-
             var mappedTags = tags.Select(x => new TagDto(x.Id, x.Name));
+            
+            _logger.LogInformation("Fetched {Count} tags", mappedTags.Count());
             
             return mappedTags;
         }
 
         public async Task AddTagAsync(string name)
         {
-            var tags = await _tagRepository.GetAllAsync();
+            _logger.LogInformation("Adding new tag '{TagName}'", name);
             
-            if(tags.Any(x => x.Name.ToLower() == name.ToLower()))
+            var tags = await _tagRepository.GetAllAsync();
+            if (tags.Any(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("Tag '{TagName}' already exists", name);
                 throw new ArgumentException("Tag already exists");
+            }
 
             var tag = new Tag()
             {
@@ -36,33 +46,48 @@ namespace Camply.Application.Implementations
             };
             
             await _tagRepository.AddAsync(tag);
+            
+            _logger.LogInformation("Tag '{TagName}' added successfully with id {TagId}", tag.Name, tag.Id);
         }
 
         public async Task UpdateTagAsync(TagUpdateRequest request)
         {
-            var tag = await _tagRepository.GetByIdAsync(request.Id);
+            _logger.LogInformation("Updating tag {TagId} to new name '{TagName}'", request.Id, request.Name);
             
-            if(tag == null)
+            var tag = await _tagRepository.GetByIdAsync(request.Id);
+            if (tag == null)
+            {
+                _logger.LogWarning("Tag {TagId} not found for update", request.Id);
                 throw new ArgumentException("Tag not found");
+            }
             
             var tags = await _tagRepository.GetAllAsync();
-            
-            if(tags.Any(x => x.Name.ToLower() == request.Name.ToLower()))
+            if (tags.Any(x => x.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("Tag name '{TagName}' already exists", request.Name);
                 throw new ArgumentException("Tag already exists");
+            }
             
             tag.Name = request.Name;
-            
             await _tagRepository.UpdateAsync(tag);
+            
+            _logger.LogInformation("Tag {TagId} updated successfully to '{TagName}'", tag.Id, tag.Name);
         }
 
         public async Task DeleteTagAsync(Guid id)
         {
-            var tag = await _tagRepository.GetByIdAsync(id);
+            _logger.LogInformation("Deleting tag {TagId}", id);
             
-            if(tag == null)
+            var tag = await _tagRepository.GetByIdAsync(id);
+            if (tag == null)
+            {
+                _logger.LogWarning("Tag {TagId} not found for deletion", id);
                 throw new ArgumentException("Tag not found");
+            }
             
             await _tagRepository.DeleteAsync(tag);
+            
+            _logger.LogInformation("Tag {TagId} deleted successfully", id);
         }
     }
 }

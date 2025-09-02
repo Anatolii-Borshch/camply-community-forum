@@ -5,6 +5,7 @@ using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Vote;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -44,7 +45,8 @@ namespace Camply.Application.Tests.Services
             _service = new VoteService(
                 _voteRepo.Object, _specRepo.Object, _voteOptionRepo.Object,
                 _createValidator.Object, _updateValidator.Object, _optionValidator.Object,
-                _userVoteRepo.Object);
+                _userVoteRepo.Object, NullLogger<VoteService>.Instance
+            );
         }
 
         [Fact]

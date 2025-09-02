@@ -4,6 +4,7 @@ using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Comment;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -25,7 +26,8 @@ namespace Camply.Application.Tests.Services
             _service = new CommentService(
                 _commentRepoMock.Object,
                 _createValidatorMock.Object,
-                _updateValidatorMock.Object
+                _updateValidatorMock.Object,
+                NullLogger<CommentService>.Instance
             );
         }
 

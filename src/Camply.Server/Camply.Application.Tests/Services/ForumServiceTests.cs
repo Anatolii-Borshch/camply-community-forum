@@ -1,11 +1,11 @@
 ﻿using Camply.Application.Contracts.Repositories;
 using Camply.Application.Implementations;
-using Camply.Application.Specifications;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Forum;
 using Camply.Shared.Dtos.Tag;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -27,8 +27,9 @@ namespace Camply.Application.Tests.Services
                 _createValidatorMock.Object,
                 _updateValidatorMock.Object,
                 _specifiedRepoMock.Object,
-                _tagRepoMock.Object
-            );
+                _tagRepoMock.Object,
+                NullLogger<ForumService>.Instance
+                );
 
             _createValidatorMock
                 .Setup(v => v.ValidateAsync(It.IsAny<ForumCreateRequest>(), default))

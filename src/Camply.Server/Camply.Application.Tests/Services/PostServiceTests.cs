@@ -6,6 +6,7 @@ using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Post;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -32,7 +33,8 @@ namespace Camply.Application.Tests.Services
                 _updateValidatorMock.Object,
                 _savedRepoMock.Object,
                 _likedRepoMock.Object,
-                _commentRepoMock.Object
+                _commentRepoMock.Object,
+                NullLogger<PostService>.Instance
             );
         }
 

@@ -2,6 +2,7 @@
 using Camply.Application.Implementations;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Tag;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -15,7 +16,7 @@ namespace Camply.Application.Tests.Services
         public TagServiceTests()
         {
             _tagRepoMock = new Mock<ITagRepository>();
-            _service = new TagService(_tagRepoMock.Object);
+            _service = new TagService(_tagRepoMock.Object, NullLogger<TagService>.Instance);
         }
 
         [Fact]

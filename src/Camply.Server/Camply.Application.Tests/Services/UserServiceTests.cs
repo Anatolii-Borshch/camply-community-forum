@@ -5,6 +5,7 @@ using Camply.Domain.Entities;
 using Camply.Shared.Dtos.User;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 
@@ -44,7 +45,9 @@ namespace Camply.Application.Tests.Services
                 _resetPasswordValidator.Object,
                 _profileUpdateValidator.Object,
                 _accountDeleteValidator.Object,
-                _passwordHasher.Object);
+                _passwordHasher.Object,
+                NullLogger<UserService>.Instance
+                );
         }
 
         [Fact]
