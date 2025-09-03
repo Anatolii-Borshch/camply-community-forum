@@ -4,6 +4,7 @@ using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Security;
 using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Camply.Shared.Dtos.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -92,6 +93,7 @@ namespace Camply.Security.PrivacyServices
                 Name = userData.Name,
                 Surname = userData.Surname,
                 Username = userData.Username,
+                Role = UserRole.Poster,
                 Email = userData.Email,
                 BirthDate = userData.BirthDate,
                 CreatedDate = DateTime.UtcNow

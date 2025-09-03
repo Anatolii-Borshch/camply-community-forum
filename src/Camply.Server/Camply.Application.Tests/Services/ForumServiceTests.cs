@@ -1,6 +1,7 @@
 ﻿using Camply.Application.Contracts.Repositories;
 using Camply.Application.Implementations;
 using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Camply.Shared.Dtos.Forum;
 using Camply.Shared.Dtos.Tag;
 using FluentValidation;
@@ -18,6 +19,7 @@ namespace Camply.Application.Tests.Services
         private readonly Mock<IValidator<ForumUpdateRequest>> _updateValidatorMock = new();
         private readonly Mock<ISpecifiedRepository<Forum>> _specifiedRepoMock = new();
         private readonly Mock<ITagRepository> _tagRepoMock = new();
+        private readonly Mock<IUserRepository> _userRepoMock = new();
         private readonly ForumService _service;
 
         public ForumServiceTests()
@@ -28,7 +30,8 @@ namespace Camply.Application.Tests.Services
                 _updateValidatorMock.Object,
                 _specifiedRepoMock.Object,
                 _tagRepoMock.Object,
-                NullLogger<ForumService>.Instance
+                NullLogger<ForumService>.Instance,
+                _userRepoMock.Object
                 );
 
             _createValidatorMock
@@ -73,6 +76,8 @@ namespace Camply.Application.Tests.Services
 
             var request = new ForumCreateRequest("Title", "Desc", Guid.NewGuid(), new List<TagDto> { new(tagId, "CSharp") });
 
+            _userRepoMock.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
+            
             await _service.CreateForum(request);
 
             _forumRepoMock.Verify(r => r.AddAsync(It.Is<Forum>(f =>
@@ -96,11 +101,14 @@ namespace Camply.Application.Tests.Services
         public async Task UpdateForum_Should_Update_When_Valid()
         {
             var forumId = Guid.NewGuid();
-            var existingForum = new Forum { Id = forumId, Title = "Old", Description = "OldDesc", Tags = new List<Tag>() };
-
+            var userId = Guid.NewGuid();
             var tagId = Guid.NewGuid();
+            
+            var existingForum = new Forum { Id = forumId, Title = "Old", Description = "OldDesc", Tags = new List<Tag>(), AdminId = userId};
             var tag = new Tag { Id = tagId, Name = "UpdatedTag" };
-
+            
+            _userRepoMock.Setup(u => u.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new User() { Id = Guid.NewGuid(), Role = UserRole.Administrator });
             _forumRepoMock.Setup(r => r.GetByIdAsync(forumId)).ReturnsAsync(existingForum);
             _tagRepoMock.Setup(r => r.GetByIdAsync(tagId)).ReturnsAsync(tag);
 
@@ -129,11 +137,13 @@ namespace Camply.Application.Tests.Services
         public async Task DeleteForum_Should_Remove_When_Exists()
         {
             var forumId = Guid.NewGuid();
-            var forum = new Forum { Id = forumId };
+            var userId = Guid.NewGuid();
+            var forum = new Forum { Id = forumId, AdminId = userId, Title = "Old", Description = "OldDesc", Tags = new List<Tag>() };
 
+            _userRepoMock.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() {Id = userId});
             _forumRepoMock.Setup(r => r.GetByIdAsync(forumId)).ReturnsAsync(forum);
 
-            await _service.DeleteForum(forumId);
+            await _service.DeleteForum(forumId, userId);
 
             _forumRepoMock.Verify(r => r.DeleteAsync(forum), Times.Once);
         }
@@ -142,9 +152,10 @@ namespace Camply.Application.Tests.Services
         public async Task DeleteForum_Should_Throw_When_Not_Found()
         {
             var forumId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
             _forumRepoMock.Setup(r => r.GetByIdAsync(forumId)).ReturnsAsync((Forum?)null);
 
-            await Should.ThrowAsync<KeyNotFoundException>(() => _service.DeleteForum(forumId));
+            await Should.ThrowAsync<KeyNotFoundException>(() => _service.DeleteForum(forumId, userId));
         }
     }
 }

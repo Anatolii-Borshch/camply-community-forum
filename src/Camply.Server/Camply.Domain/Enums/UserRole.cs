@@ -2,7 +2,7 @@
 {
     public enum UserRole
     {
-        Administrator,
-        Poster
+        Poster,
+        Administrator
     }
 }

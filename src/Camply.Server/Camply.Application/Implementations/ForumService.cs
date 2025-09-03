@@ -10,18 +10,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
-    public class ForumService : IForumService
+    public class ForumService : UserPermissionService, IForumService
     {
         private readonly IForumRepository _forumRepository;
-        private readonly IValidator<ForumCreateRequest> _createValidator;
-        private readonly IValidator<ForumUpdateRequest> _updateValidator;
         private readonly ISpecifiedRepository<Forum> _specifiedRepository;
         private readonly ITagRepository _tagRepository;
+        
+        private readonly IValidator<ForumCreateRequest> _createValidator;
+        private readonly IValidator<ForumUpdateRequest> _updateValidator;
+        
         private readonly ILogger<ForumService> _logger;
 
         public ForumService(IForumRepository forumRepository, IValidator<ForumCreateRequest> createValidator
             , IValidator<ForumUpdateRequest> updateValidator, ISpecifiedRepository<Forum> specifiedRepository
-            , ITagRepository tagRepository, ILogger<ForumService> logger)
+            , ITagRepository tagRepository, ILogger<ForumService> logger, IUserRepository userRepository): base(userRepository, logger)
         {
             _forumRepository = forumRepository;
             _createValidator = createValidator;
@@ -73,6 +75,8 @@ namespace Camply.Application.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
+            await EnsureUserExistsAsync(request.AdminId);
+            
             var forum = new Forum
             {
                 Title = request.Title,
@@ -117,6 +121,9 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException($"Forum with id {request.Id} not found.");
             }
             
+            var user = await EnsureUserExistsAsync(request.AdminId);
+            EnsureUserAcess(user, request.AdminId);
+            
             forum.Title = request.Title;
             forum.Description = request.Description;
             
@@ -140,7 +147,7 @@ namespace Camply.Application.Implementations
             _logger.LogInformation("Forum {ForumId} updated successfully", forum.Id);
         }
 
-        public async Task DeleteForum(Guid id)
+        public async Task DeleteForum(Guid id, Guid userId)
         {
             _logger.LogInformation("Deleting forum {ForumId}", id);
 
@@ -151,6 +158,9 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException($"Forum with id {id} not found.");
             }
 
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, forum.AdminId);
+            
             await _forumRepository.DeleteAsync(forum);
             _logger.LogInformation("Forum {ForumId} deleted successfully", id);
         }

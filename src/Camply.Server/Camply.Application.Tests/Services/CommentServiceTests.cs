@@ -1,6 +1,7 @@
 ﻿using Camply.Application.Contracts.Repositories;
 using Camply.Application.Implementations;
 using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Camply.Shared.Dtos.Comment;
 using FluentValidation;
 using FluentValidation.Results;
@@ -12,21 +13,19 @@ namespace Camply.Application.Tests.Services
 {
     public class CommentServiceTests
     {
-        private readonly Mock<ICommentRepository> _commentRepoMock;
-        private readonly Mock<IValidator<CommentCreateRequest>> _createValidatorMock;
-        private readonly Mock<IValidator<CommentUpdateRequest>> _updateValidatorMock;
+        private readonly Mock<ICommentRepository> _commentRepoMock = new();
+        private readonly Mock<IValidator<CommentCreateRequest>> _createValidatorMock = new();
+        private readonly Mock<IValidator<CommentUpdateRequest>> _updateValidatorMock = new();
+        private readonly Mock<IUserRepository> _userRepoMock = new();
         private readonly CommentService _service;
 
         public CommentServiceTests()
         {
-            _commentRepoMock = new Mock<ICommentRepository>();
-            _createValidatorMock = new Mock<IValidator<CommentCreateRequest>>();
-            _updateValidatorMock = new Mock<IValidator<CommentUpdateRequest>>();
-
             _service = new CommentService(
                 _commentRepoMock.Object,
                 _createValidatorMock.Object,
                 _updateValidatorMock.Object,
+                _userRepoMock.Object,
                 NullLogger<CommentService>.Instance
             );
         }
@@ -64,7 +63,12 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task CreateComment_Should_Add_Comment_When_Valid()
         {
-            var request = new CommentCreateRequest(Guid.NewGuid(), Guid.NewGuid(), "Hello", null);
+            var userId = Guid.NewGuid();
+            
+            var request = new CommentCreateRequest(userId, Guid.NewGuid(), "Hello", null);
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new User { Id = Guid.NewGuid(), Role = UserRole.Poster });
             
             _createValidatorMock.Setup(v => v.ValidateAsync(request, default))
                 .ReturnsAsync(new ValidationResult());
@@ -77,9 +81,15 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task CreateComment_Should_Throw_When_Invalid()
         {
-            var request = new CommentCreateRequest(new Guid(), Guid.NewGuid(), new string('@', 3000), null);
+            var userId = Guid.NewGuid();
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new User { Id = Guid.NewGuid(), Role = UserRole.Poster });
+
+            var request = new CommentCreateRequest(userId, Guid.NewGuid(), new string('@', 3000), null);
+            
             _createValidatorMock.Setup(v => v.ValidateAsync(request, default))
-                .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("Content", "Required") }));
+                .ReturnsAsync(new ValidationResult([new ValidationFailure("Content", "Required")]));
 
             await Should.ThrowAsync<ValidationException>(() => _service.CreateComment(request));
         }
@@ -90,6 +100,9 @@ namespace Camply.Application.Tests.Services
             var userId = Guid.NewGuid();
             var request = new CommentUpdateRequest(Guid.NewGuid(), userId, "Updated");
 
+            _userRepoMock.Setup(r => r.GetByIdAsync(userId))
+                .ReturnsAsync(new User { Id = userId, Role = UserRole.Poster });
+            
             _updateValidatorMock.Setup(v => v.ValidateAsync(request, default))
                 .ReturnsAsync(new ValidationResult());
 
@@ -122,6 +135,9 @@ namespace Camply.Application.Tests.Services
 
             var comment = new Comment { Id = request.Id, UserId = Guid.NewGuid() };
             _commentRepoMock.Setup(r => r.GetByIdAsync(request.Id)).ReturnsAsync(comment);
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(request.UserId))
+                .ReturnsAsync(new User { Id = request.UserId, Role = UserRole.Poster });
 
             await Should.ThrowAsync<UnauthorizedAccessException>(() => _service.UpdateComment(request));
         }
@@ -133,6 +149,9 @@ namespace Camply.Application.Tests.Services
             var userId = Guid.NewGuid();
             var comment = new Comment { Id = id, UserId = userId };
 
+            _userRepoMock.Setup(r => r.GetByIdAsync(userId))
+                .ReturnsAsync(new User { Id = userId, Role = UserRole.Poster });
+            
             _commentRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(comment);
 
             await _service.DeleteComment(id, userId);
@@ -153,11 +172,16 @@ namespace Camply.Application.Tests.Services
         public async Task DeleteComment_Should_Throw_When_NotAuthor()
         {
             var id = Guid.NewGuid();
-            var comment = new Comment { Id = id, UserId = Guid.NewGuid() };
+            var authorId = Guid.NewGuid();
+            var otherUserId = Guid.NewGuid();
 
+            var comment = new Comment { Id = id, UserId = authorId };
             _commentRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(comment);
 
-            await Should.ThrowAsync<UnauthorizedAccessException>(() => _service.DeleteComment(id, Guid.NewGuid()));
+            _userRepoMock.Setup(r => r.GetByIdAsync(otherUserId))
+                .ReturnsAsync(new User { Id = otherUserId, Role = UserRole.Poster });
+
+            await Should.ThrowAsync<UnauthorizedAccessException>(() => _service.DeleteComment(id, otherUserId));
         }
     }
 }

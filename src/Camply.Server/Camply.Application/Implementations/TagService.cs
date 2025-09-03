@@ -6,12 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
-    public class TagService : ITagService
+    public class TagService : UserPermissionService, ITagService
     {
         private readonly ITagRepository _tagRepository;
+        
         private readonly ILogger<TagService> _logger;
 
-        public TagService(ITagRepository tagRepository, ILogger<TagService> logger)
+        public TagService(ITagRepository tagRepository, ILogger<TagService> logger, IUserRepository userRepository) : base(userRepository, logger)
         {
             _tagRepository = tagRepository;
             _logger = logger;
@@ -29,9 +30,12 @@ namespace Camply.Application.Implementations
             return mappedTags;
         }
 
-        public async Task AddTagAsync(string name)
+        public async Task AddTagAsync(string name, Guid userId)
         {
             _logger.LogInformation("Adding new tag '{TagName}'", name);
+            
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, null);
             
             var tags = await _tagRepository.GetAllAsync();
             if (tags.Any(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
@@ -54,6 +58,9 @@ namespace Camply.Application.Implementations
         {
             _logger.LogInformation("Updating tag {TagId} to new name '{TagName}'", request.Id, request.Name);
             
+            var user = await EnsureUserExistsAsync(request.UserId);
+            EnsureUserAcess(user, null);
+            
             var tag = await _tagRepository.GetByIdAsync(request.Id);
             if (tag == null)
             {
@@ -74,9 +81,12 @@ namespace Camply.Application.Implementations
             _logger.LogInformation("Tag {TagId} updated successfully to '{TagName}'", tag.Id, tag.Name);
         }
 
-        public async Task DeleteTagAsync(Guid id)
+        public async Task DeleteTagAsync(Guid id, Guid userId)
         {
             _logger.LogInformation("Deleting tag {TagId}", id);
+            
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, null);
             
             var tag = await _tagRepository.GetByIdAsync(id);
             if (tag == null)

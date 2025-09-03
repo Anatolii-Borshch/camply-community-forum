@@ -76,7 +76,9 @@ namespace Camply.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<ApiResponse<object>>> DeleteForum(Guid id)
         {
-            await _forumService.DeleteForum(id);
+            var userId = _authService.UserId;
+            
+            await _forumService.DeleteForum(id, userId);
 
             return Ok(ApiResponse.Ok("Forum deleted successfully"));
         }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
-    public class VoteService : IVoteService
+    public class VoteService : UserPermissionService, IVoteService
     {
         private readonly ISpecifiedRepository<Vote> _specification;
         private readonly IVoteRepository _voteRepository;
@@ -19,12 +19,13 @@ namespace Camply.Application.Implementations
         private readonly IValidator<VoteCreateRequest> _voteCreateValidator;
         private readonly IValidator<VoteUpdateRequest> _voteUpdateValidator;
         private readonly IValidator<VoteOptionUpdateRequest> _voteOptionUpdateValidator;
+        
         private readonly ILogger<VoteService> _logger;
 
         public VoteService(IVoteRepository voteRepository, ISpecifiedRepository<Vote> specification
         , IVoteOptionRepository voteOptionRepository, IValidator<VoteCreateRequest> voteCreateValidator
         , IValidator<VoteUpdateRequest> voteUpdateValidator, IValidator<VoteOptionUpdateRequest> voteOptionUpdateValidator
-        , IUserVoteRepository userVoteRepository, ILogger<VoteService> logger)
+        , IUserVoteRepository userVoteRepository, ILogger<VoteService> logger, IUserRepository userRepository) : base(userRepository, logger)
         {
             _voteRepository = voteRepository;
             _specification = specification;
@@ -57,6 +58,8 @@ namespace Camply.Application.Implementations
                 _logger.LogWarning("Vote creation validation failed for forum {ForumId}", request.ForumId);
                 throw new ValidationException(validationResult.Errors);
             }
+            
+            await EnsureUserExistsAsync(request.AuthorId);
             
             var newVote = new Vote
             {
@@ -97,11 +100,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("Vote not found");
             }
             
-            if (vote.UserId != request.UserId)
-            {
-                _logger.LogWarning("User {UserId} not allowed to update vote {VoteId}", request.UserId, request.VoteId);
-                throw new UnauthorizedAccessException("Not allowed to update this vote");
-            }
+            var user = await EnsureUserExistsAsync(request.UserId);
+            EnsureUserAcess(user, vote.UserId);
 
             vote.Title = request.Title;
             vote.ModifiedDate = DateTime.UtcNow;
@@ -128,11 +128,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("Vote option not found");
             }
 
-            if (option.Vote.UserId != request.AuthorId)
-            {
-                _logger.LogWarning("User {UserId} not allowed to update vote option {OptionId}", request.AuthorId, request.VoteOptionId);
-                throw new UnauthorizedAccessException("Not allowed to update this vote option");
-            }
+            var user = await EnsureUserExistsAsync(request.AuthorId);
+            EnsureUserAcess(user, option.Vote.UserId);
 
             option.Name = request.Name;
             option.Index = request.Index;
@@ -155,11 +152,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("Vote option not found");
             }
 
-            if (option.Vote.UserId != userId)
-            {
-                _logger.LogWarning("User {UserId} not allowed to delete vote option {OptionId}", userId, optionId);
-                throw new UnauthorizedAccessException("Not allowed to delete this vote option");
-            }
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, option.Vote.UserId);
 
             foreach (var item in option.UserVotes.ToList())
                 await _userVoteRepository.DeleteAsync(item);
@@ -182,11 +176,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException("Vote not found");
             }
 
-            if (vote.UserId != userId)
-            {
-                _logger.LogWarning("User {UserId} not allowed to delete vote {VoteId}", userId, voteId);
-                throw new UnauthorizedAccessException("Not allowed");
-            }
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, vote.UserId);
 
             await _voteRepository.DeleteAsync(vote);
             
@@ -197,6 +188,9 @@ namespace Camply.Application.Implementations
         public async Task<bool> Vote(Guid optionId, Guid userId)
         {
             _logger.LogInformation("User {UserId} voting for option {OptionId}", userId, optionId);
+            
+            await EnsureUserExistsAsync(userId);
+            
             var option = await _voteOptionRepository.GetByIdAsync(optionId);
             if (option == null)
             {

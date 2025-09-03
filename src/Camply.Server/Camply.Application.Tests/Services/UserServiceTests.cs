@@ -13,21 +13,15 @@ namespace Camply.Application.Tests.Services
 {
     public class UserServiceTests
     {
-        private readonly Mock<IUserRepository> _userRepoMock;
-        private readonly Mock<IValidator<ResetPasswordRequest>> _resetPasswordValidator;
-        private readonly Mock<IValidator<ProfileUpdateRequest>> _profileUpdateValidator;
-        private readonly Mock<IValidator<AccountDeleteRequest>> _accountDeleteValidator;
-        private readonly Mock<IPasswordHasher<User>> _passwordHasher;
+        private readonly Mock<IUserRepository> _userRepoMock = new();
+        private readonly Mock<IValidator<ResetPasswordRequest>> _resetPasswordValidator = new();
+        private readonly Mock<IValidator<ProfileUpdateRequest>> _profileUpdateValidator = new();
+        private readonly Mock<IValidator<AccountDeleteRequest>> _accountDeleteValidator = new();
+        private readonly Mock<IPasswordHasher<User>> _passwordHasher  = new();
         private readonly UserService _service;
 
         public UserServiceTests()
         {
-            _userRepoMock = new Mock<IUserRepository>();
-            _resetPasswordValidator = new Mock<IValidator<ResetPasswordRequest>>();
-            _profileUpdateValidator = new Mock<IValidator<ProfileUpdateRequest>>();
-            _accountDeleteValidator = new Mock<IValidator<AccountDeleteRequest>>();
-            _passwordHasher = new Mock<IPasswordHasher<User>>();
-
             _resetPasswordValidator
                 .Setup(v => v.ValidateAsync(It.IsAny<ResetPasswordRequest>(), default))
                 .ReturnsAsync(new ValidationResult());
@@ -71,7 +65,7 @@ namespace Camply.Application.Tests.Services
             _userRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((User?)null);
 
             var ex = await Should.ThrowAsync<KeyNotFoundException>(() => _service.GetUserByIdAsync(id));
-            ex.Message.ShouldBe("User not found");
+            ex.Message.ShouldBe($"User with id {id} not found.");
         }
 
         [Fact]
@@ -96,7 +90,7 @@ namespace Camply.Application.Tests.Services
             _userRepoMock.Setup(r => r.GetByIdAsync(request.UserId)).ReturnsAsync((User?)null);
 
             var ex = await Should.ThrowAsync<KeyNotFoundException>(() => _service.ChangePasswordAsync(request));
-            ex.Message.ShouldBe("User not found");
+            ex.Message.ShouldBe($"User with id {request.UserId} not found.");
         }
 
         [Fact]
@@ -118,11 +112,12 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task UpdateProfileAsync_Should_Throw_When_User_Not_Found()
         {
-            var request = new ProfileUpdateRequest(Guid.NewGuid(), "N", "S", DateTime.UtcNow, "u");
+            var user = new User { Id = Guid.NewGuid(), Name = "Old" };
+            var request = new ProfileUpdateRequest(user.Id, "N", "S", DateTime.UtcNow, "u");
             _userRepoMock.Setup(r => r.GetByIdAsync(request.Id)).ReturnsAsync((User?)null);
 
             var ex = await Should.ThrowAsync<KeyNotFoundException>(() => _service.UpdateProfileAsync(request));
-            ex.Message.ShouldBe("User not found");
+            ex.Message.ShouldBe($"User with id {user.Id} not found.");
         }
 
         [Fact]
@@ -146,7 +141,7 @@ namespace Camply.Application.Tests.Services
             _userRepoMock.Setup(r => r.GetByIdAsync(request.UserId)).ReturnsAsync((User?)null);
 
             var ex = await Should.ThrowAsync<KeyNotFoundException>(() => _service.DeleteAccount(request));
-            ex.Message.ShouldBe("User not found");
+            ex.Message.ShouldBe($"User with id {request.UserId} not found.");
         }
 
         [Fact]

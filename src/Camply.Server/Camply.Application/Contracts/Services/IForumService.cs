@@ -10,6 +10,6 @@ namespace Camply.Application.Contracts.Services
         Task<IEnumerable<ForumPrevievDto>> GetAllForums(ForumSearchRequest request);
         Task CreateForum(ForumCreateRequest request);
         Task UpdateForum(ForumUpdateRequest request);
-        Task DeleteForum(Guid id);
+        Task DeleteForum(Guid id, Guid userId);
     }
 }

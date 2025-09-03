@@ -9,21 +9,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
-    public class PostService : IPostService
+    public class PostService : UserPermissionService, IPostService
     {
         private readonly IPostRepository _postRepository;
         private readonly ISavedRepository _savedRepository;
         private readonly ILikedPostRepository _likedPostRepository;
         private readonly ISpecifiedRepository<Post> _specification;
+        private readonly ICommentRepository _commentRepository;
+
         private readonly IValidator<PostCreateRequest> _postCreateValidator;
         private readonly IValidator<PostUpdateRequest> _postUpdateValidator;
-        private readonly ICommentRepository _commentRepository;
+        
         private readonly ILogger<PostService> _logger;
 
         public PostService(IPostRepository postRepository, ISpecifiedRepository<Post> specification
             , IValidator<PostCreateRequest> postCreateValidator, IValidator<PostUpdateRequest> postUpdateValidator
             , ISavedRepository savedRepository, ILikedPostRepository likedPostRepository, ICommentRepository commentRepository
-            , ILogger<PostService> logger)
+            , ILogger<PostService> logger, IUserRepository userRepository) : base(userRepository, logger)
         {
             _postRepository = postRepository;
             _specification = specification;
@@ -50,6 +52,9 @@ namespace Camply.Application.Implementations
         public async Task CreatePost(PostCreateRequest request)
         {
             _logger.LogInformation("Creating post '{Title}' by user {UserId} in forum {ForumId}", request.Title, request.AuthorId, request.ForumId);
+            
+            await EnsureUserExistsAsync(request.AuthorId);
+
             var validationResult = _postCreateValidator.Validate(request);
             
             if (!validationResult.IsValid)
@@ -76,6 +81,9 @@ namespace Camply.Application.Implementations
         public async Task UpdatePost(PostUpdateRequest request)
         {
             _logger.LogInformation("Updating post {PostId} by user {UserId}", request.PostId, request.AuthorId);
+            
+            var user = await EnsureUserExistsAsync(request.AuthorId);
+            EnsureUserAcess(user, request.AuthorId);
             
             var validationResult = _postUpdateValidator.Validate(request);
             if (!validationResult.IsValid)
@@ -115,6 +123,9 @@ namespace Camply.Application.Implementations
                 throw new UnauthorizedAccessException("You cannot delete this post.");
             }
 
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, post.UserId);
+            
             var comments = await _commentRepository.GetCommentsByPostIdAsync(postId, int.MaxValue);
 
             foreach (var comment in comments)
@@ -148,6 +159,8 @@ namespace Camply.Application.Implementations
         {
             _logger.LogInformation("Toggling pin for post {PostId} by user {UserId}", postId, userId);
             
+            await EnsureUserExistsAsync(userId);
+            
             var post = await _postRepository.GetByIdAsync(postId);
             if (post == null || post.UserId != userId)
             {
@@ -166,6 +179,8 @@ namespace Camply.Application.Implementations
         public async Task<bool> LikePost(Guid userId, Guid postId)
         {
             _logger.LogInformation("User {UserId} toggling like for post {PostId}", userId, postId);
+            
+            await EnsureUserExistsAsync(userId);
             
             var post = await _postRepository.GetByIdAsync(postId);
             if (post == null)
@@ -199,6 +214,8 @@ namespace Camply.Application.Implementations
         public async Task<bool> SavePost(Guid userId, Guid postId)
         {
             _logger.LogInformation("User {UserId} toggling save for post {PostId}", userId, postId);
+            
+            await EnsureUserExistsAsync(userId);
             
             var post = await _postRepository.GetByIdAsync(postId);
             if (post == null)

@@ -21,6 +21,7 @@ namespace Camply.Application.Tests.Services
         private readonly Mock<IValidator<PostCreateRequest>> _createValidatorMock = new();
         private readonly Mock<IValidator<PostUpdateRequest>> _updateValidatorMock = new();
         private readonly Mock<ICommentRepository> _commentRepoMock = new();
+        private readonly Mock<IUserRepository> _userRepoMock = new();
 
         private readonly PostService _service;
 
@@ -34,7 +35,8 @@ namespace Camply.Application.Tests.Services
                 _savedRepoMock.Object,
                 _likedRepoMock.Object,
                 _commentRepoMock.Object,
-                NullLogger<PostService>.Instance
+                NullLogger<PostService>.Instance,
+                _userRepoMock.Object
             );
         }
 
@@ -61,6 +63,8 @@ namespace Camply.Application.Tests.Services
             _createValidatorMock.Setup(x => x.Validate(request))
                 .Returns(new ValidationResult());
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
+            
             await _service.CreatePost(request);
 
             _postRepoMock.Verify(r => r.AddAsync(It.Is<Post>(p => p.Title == "Title")), Times.Once);
@@ -70,6 +74,8 @@ namespace Camply.Application.Tests.Services
         public async Task CreatePost_Should_Throw_When_Invalid()
         {
             var request = new PostCreateRequest("", "", Guid.NewGuid(), Guid.NewGuid());
+           
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
             _createValidatorMock.Setup(x => x.Validate(request))
                 .Returns(new ValidationResult(new[] { new ValidationFailure("Title", "Required") }));
 
@@ -82,6 +88,9 @@ namespace Camply.Application.Tests.Services
             var userId = Guid.NewGuid();
             var request = new PostUpdateRequest(Guid.NewGuid(), "Updated", "Desc", userId);
             var post = new Post { Id = request.PostId, UserId = userId, Title = "Old" };
+
+            
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
 
             _updateValidatorMock.Setup(x => x.Validate(request))
                 .Returns(new ValidationResult());
@@ -98,6 +107,8 @@ namespace Camply.Application.Tests.Services
             var request = new PostUpdateRequest(Guid.NewGuid(), "Updated", "Desc", Guid.NewGuid());
             var post = new Post { Id = request.PostId, UserId = Guid.NewGuid() };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
+
             _updateValidatorMock.Setup(x => x.Validate(request)).Returns(new ValidationResult());
             _postRepoMock.Setup(r => r.GetByIdAsync(request.PostId)).ReturnsAsync(post);
 
@@ -113,6 +124,8 @@ namespace Camply.Application.Tests.Services
 
             var comment = new Comment { Id = Guid.NewGuid() };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
+            
             _postRepoMock
                 .Setup(r => r.GetIncludedByIdAsync(postId, It.IsAny<Expression<Func<Post, object>>>(), It.IsAny<Expression<Func<Post, object>>>()))
                 .ReturnsAsync(post);
@@ -138,6 +151,8 @@ namespace Camply.Application.Tests.Services
             var postId = Guid.NewGuid();
             var post = new Post { Id = postId, UserId = Guid.NewGuid() };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
+            
             _postRepoMock
                 .Setup(r => r.GetIncludedByIdAsync(postId, It.IsAny<Expression<Func<Post, object>>>(), It.IsAny<Expression<Func<Post, object>>>()))
                 .ReturnsAsync(post);
@@ -152,6 +167,8 @@ namespace Camply.Application.Tests.Services
             var postId = Guid.NewGuid();
             var post = new Post { Id = postId, UserId = userId, IsPinned = false };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
+            
             _postRepoMock.Setup(r => r.GetByIdAsync(postId)).ReturnsAsync(post);
 
             var result = await _service.PinPost(userId, postId);
@@ -167,6 +184,7 @@ namespace Camply.Application.Tests.Services
             var postId = Guid.NewGuid();
             var post = new Post { Id = postId };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
             _postRepoMock.Setup(r => r.GetByIdAsync(postId)).ReturnsAsync(post);
             _likedRepoMock.Setup(r => r.GetByUserAndPostAsync(userId, postId)).ReturnsAsync((LikedPost?)null);
 
@@ -184,6 +202,7 @@ namespace Camply.Application.Tests.Services
             var post = new Post { Id = postId };
             var liked = new LikedPost { PostId = postId, UserId = userId };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
             _postRepoMock.Setup(r => r.GetByIdAsync(postId)).ReturnsAsync(post);
             _likedRepoMock.Setup(r => r.GetByUserAndPostAsync(userId, postId)).ReturnsAsync(liked);
 
@@ -200,6 +219,7 @@ namespace Camply.Application.Tests.Services
             var postId = Guid.NewGuid();
             var post = new Post { Id = postId };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
             _postRepoMock.Setup(r => r.GetByIdAsync(postId)).ReturnsAsync(post);
             _savedRepoMock.Setup(r => r.GetByUserAndPostAsync(userId, postId)).ReturnsAsync((SavedPost?)null);
 
@@ -217,6 +237,7 @@ namespace Camply.Application.Tests.Services
             var post = new Post { Id = postId };
             var saved = new SavedPost { PostId = postId, UserId = userId };
 
+            _userRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = userId });
             _postRepoMock.Setup(r => r.GetByIdAsync(postId)).ReturnsAsync(post);
             _savedRepoMock.Setup(r => r.GetByUserAndPostAsync(userId, postId)).ReturnsAsync(saved);
 

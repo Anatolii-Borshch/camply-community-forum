@@ -1,6 +1,7 @@
 ﻿using Camply.Application.Contracts.Repositories;
 using Camply.Application.Implementations;
 using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Camply.Shared.Dtos.Tag;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -10,13 +11,16 @@ namespace Camply.Application.Tests.Services
 {
     public class TagServiceTests
     {
-        private readonly Mock<ITagRepository> _tagRepoMock;
+        private readonly Mock<ITagRepository> _tagRepoMock = new();
+        private readonly Mock<IUserRepository> _userRepoMock = new();
         private readonly TagService _service;
 
         public TagServiceTests()
         {
-            _tagRepoMock = new Mock<ITagRepository>();
-            _service = new TagService(_tagRepoMock.Object, NullLogger<TagService>.Instance);
+            _service = new TagService
+                (_tagRepoMock.Object
+                    , NullLogger<TagService>.Instance
+                    , _userRepoMock.Object);
         }
 
         [Fact]
@@ -41,9 +45,12 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task AddTagAsync_Should_Add_When_Not_Exists()
         {
+            var userId = Guid.NewGuid();
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Role = UserRole.Administrator});
             _tagRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Tag>());
 
-            await _service.AddTagAsync("newtag");
+            await _service.AddTagAsync("newtag", userId);
 
             _tagRepoMock.Verify(r => r.AddAsync(It.Is<Tag>(t => t.Name == "newtag")), Times.Once);
         }
@@ -52,9 +59,11 @@ namespace Camply.Application.Tests.Services
         public async Task AddTagAsync_Should_Throw_When_Duplicate_Exists()
         {
             var existing = new Tag { Id = Guid.NewGuid(), Name = "duplicate" };
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Role = UserRole.Administrator});
             _tagRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Tag> { existing });
 
-            var ex = await Should.ThrowAsync<ArgumentException>(() => _service.AddTagAsync("duplicate"));
+            var ex = await Should.ThrowAsync<ArgumentException>(() => _service.AddTagAsync("duplicate", Guid.NewGuid()));
             
             ex.Message.ShouldBe("Tag already exists");
             _tagRepoMock.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Never);
@@ -65,10 +74,13 @@ namespace Camply.Application.Tests.Services
         {
             var id = Guid.NewGuid();
             var tag = new Tag { Id = id, Name = "old" };
+            var user = new User { Id = Guid.NewGuid(), Name = "newuser", Role = UserRole.Administrator};
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
             _tagRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(tag);
             _tagRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Tag> { tag });
 
-            var request = new TagUpdateRequest(id, "new");
+            var request = new TagUpdateRequest(id, "new", user.Id);
 
             await _service.UpdateTagAsync(request);
 
@@ -80,7 +92,10 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task UpdateTagAsync_Should_Throw_When_Not_Found()
         {
-            var request = new TagUpdateRequest(Guid.NewGuid(), "new");
+            var user = new User { Id = Guid.NewGuid(), Name = "newuser", Role = UserRole.Administrator };
+            var request = new TagUpdateRequest(Guid.NewGuid(), "new", user.Id);
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
             _tagRepoMock.Setup(r => r.GetByIdAsync(request.Id)).ReturnsAsync((Tag?)null);
 
             var ex = await Should.ThrowAsync<ArgumentException>(() => _service.UpdateTagAsync(request));
@@ -94,11 +109,13 @@ namespace Camply.Application.Tests.Services
             var id = Guid.NewGuid();
             var tag = new Tag { Id = id, Name = "old" };
             var duplicate = new Tag { Id = Guid.NewGuid(), Name = "duplicate" };
+            var user = new User { Id = Guid.NewGuid(), Name = "newuser", Role = UserRole.Administrator };
 
+            _userRepoMock.Setup(r => r.GetByIdAsync(user.Id)).ReturnsAsync(user);
             _tagRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(tag);
             _tagRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Tag> { tag, duplicate });
 
-            var request = new TagUpdateRequest(id, "duplicate");
+            var request = new TagUpdateRequest(id, "duplicate", user.Id);
 
             var ex = await Should.ThrowAsync<ArgumentException>(() => _service.UpdateTagAsync(request));
 
@@ -110,9 +127,11 @@ namespace Camply.Application.Tests.Services
         {
             var id = Guid.NewGuid();
             var tag = new Tag { Id = id, Name = "todelete" };
+            
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Role = UserRole.Administrator });
             _tagRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(tag);
 
-            await _service.DeleteTagAsync(id);
+            await _service.DeleteTagAsync(id, Guid.NewGuid());
 
             _tagRepoMock.Verify(r => r.DeleteAsync(tag), Times.Once);
         }
@@ -123,7 +142,9 @@ namespace Camply.Application.Tests.Services
             var id = Guid.NewGuid();
             _tagRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((Tag?)null);
 
-            var ex = await Should.ThrowAsync<ArgumentException>(() => _service.DeleteTagAsync(id));
+            _userRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Role = UserRole.Administrator });
+            
+            var ex = await Should.ThrowAsync<ArgumentException>(() => _service.DeleteTagAsync(id, Guid.NewGuid()));
             ex.Message.ShouldBe("Tag not found");
 
             _tagRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Tag>()), Times.Never);

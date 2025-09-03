@@ -8,16 +8,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
 {
-    public class CommentService : ICommentService
+    public class CommentService : UserPermissionService, ICommentService
     {
         private readonly ICommentRepository _commentRepository;
+        
         private readonly IValidator<CommentCreateRequest> _createValidator;
         private readonly IValidator<CommentUpdateRequest> _updateValidator;
         
         private readonly ILogger<CommentService> _logger;
 
         public CommentService(ICommentRepository commentRepository, IValidator<CommentCreateRequest> createValidator,
-            IValidator<CommentUpdateRequest> updateValidator, ILogger<CommentService> logger)
+            IValidator<CommentUpdateRequest> updateValidator, IUserRepository userRepository,ILogger<CommentService> logger) : base(userRepository, logger)
         {
             _commentRepository = commentRepository;
             _createValidator = createValidator;
@@ -39,7 +40,9 @@ namespace Camply.Application.Implementations
         public async Task CreateComment(CommentCreateRequest request)
         {
             _logger.LogInformation("Creating comment for post {PostId} by user {UserId}", request.PostId, request.UserId);
-
+            
+            await EnsureUserExistsAsync(request.UserId);
+            
             var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
@@ -80,11 +83,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException($"Comment with id {request.Id} not found.");
             }
 
-            if (comment.UserId != request.UserId)
-            {
-                _logger.LogWarning("User {UserId} tried to update comment {CommentId} but is not the author", request.UserId, request.Id);
-                throw new UnauthorizedAccessException("User is not the author of this comment.");
-            }
+            var user = await EnsureUserExistsAsync(request.UserId);
+            EnsureUserAcess(user, comment.UserId);
 
             comment.Content = request.Content;
             comment.ModifiedDate = DateTime.UtcNow;
@@ -105,11 +105,8 @@ namespace Camply.Application.Implementations
                 throw new KeyNotFoundException($"Comment with id {id} not found.");
             }
 
-            if (comment.UserId != userId)
-            {
-                _logger.LogWarning("User {UserId} tried to delete comment {CommentId} but is not the author", userId, id);
-                throw new UnauthorizedAccessException("User is not the author of this comment.");
-            }
+            var user = await EnsureUserExistsAsync(userId);
+            EnsureUserAcess(user, comment.UserId);
 
             await _commentRepository.DeleteAsync(comment);
 

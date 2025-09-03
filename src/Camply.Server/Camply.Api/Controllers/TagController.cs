@@ -1,6 +1,7 @@
 ﻿using Camply.Api.Models.Helpers;
 using Camply.Api.Models.Responses;
 using Camply.Application.Contracts.Services;
+using Camply.Security.PrivacyServices;
 using Camply.Shared.Dtos.Tag;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace Camply.Api.Controllers
     public class TagController : ControllerBase
     {
         private readonly ITagService _tagService;
+        private readonly IAuthService _authService;
         
-        public TagController(ITagService tagService)
+        public TagController(ITagService tagService, AuthService authService)
         {
             _tagService = tagService;
+            _authService = authService;
         }
 
         [HttpGet]
@@ -31,7 +34,9 @@ namespace Camply.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateTag([FromBody] string name)
         {
-            await _tagService.AddTagAsync(name);
+            var userId = _authService.UserId;
+            
+            await _tagService.AddTagAsync(name, userId);
 
             return Ok(ApiResponse.Ok("Tag created"));
         }
@@ -39,7 +44,9 @@ namespace Camply.Api.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> UpdateTag(Guid id, [FromBody] string name)
         {
-            var tagRequest = new TagUpdateRequest(id, name);
+            var userId = _authService.UserId;
+            
+            var tagRequest = new TagUpdateRequest(id, name, userId);
             
             await _tagService.UpdateTagAsync(tagRequest);
             
@@ -49,7 +56,9 @@ namespace Camply.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> DeleteTag(Guid id)
         {
-            await _tagService.DeleteTagAsync(id);
+            var userId = _authService.UserId;
+            
+            await _tagService.DeleteTagAsync(id, userId);
             
             return Ok(ApiResponse.Ok("Tag deleted"));
         }
