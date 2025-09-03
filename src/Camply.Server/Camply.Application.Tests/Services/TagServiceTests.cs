@@ -3,6 +3,7 @@ using Camply.Application.Implementations;
 using Camply.Domain.Entities;
 using Camply.Domain.Enums;
 using Camply.Shared.Dtos.Tag;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -14,13 +15,16 @@ namespace Camply.Application.Tests.Services
         private readonly Mock<ITagRepository> _tagRepoMock = new();
         private readonly Mock<IUserRepository> _userRepoMock = new();
         private readonly TagService _service;
+        private readonly IMemoryCache _cache;
 
         public TagServiceTests()
         {
+            _cache = new MemoryCache(new MemoryCacheOptions());
             _service = new TagService
                 (_tagRepoMock.Object
                     , NullLogger<TagService>.Instance
-                    , _userRepoMock.Object);
+                    , _userRepoMock.Object
+                    , _cache);
         }
 
         [Fact]

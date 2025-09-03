@@ -6,6 +6,7 @@ using Camply.Domain.Entities;
 using Camply.Domain.Enums;
 using Camply.Shared.Dtos.User;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
@@ -21,10 +22,12 @@ namespace Camply.Application.Implementations
         
         private readonly ILogger<UserService> _logger;
         
+        private readonly IMemoryCache _cache;
+        
         public UserService(
             IUserRepository userRepository, IValidator<ResetPasswordRequest> resetPasswordValidator
             , IValidator<ProfileUpdateRequest> profileUpdateValidator, IValidator<AccountDeleteRequest> accountDeleteValidator
-            , IPasswordHasher<User> passwordHasher, ILogger<UserService> logger) : base(userRepository, logger)
+            , IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IMemoryCache cache) : base(userRepository, logger)
         {
             _userRepository = userRepository;
             _resetPasswordValidator = resetPasswordValidator;
@@ -32,17 +35,30 @@ namespace Camply.Application.Implementations
             _accountDeleteValidator = accountDeleteValidator;
             _passwordHasher = passwordHasher;
             _logger = logger;
+            _cache = cache;
         }
         
         public async Task<UserProfileDto> GetUserByIdAsync(Guid userId)
         {
             _logger.LogInformation("Fetching user by id {UserId}", userId);
 
+            var cacheKey = $"UserProfile_{userId}";
+            
+            if (_cache.TryGetValue(cacheKey, out UserProfileDto cachedUser))
+            {
+                return cachedUser;
+            }
+            
             var user = await EnsureUserExistsAsync(userId);
             EnsureUserAcess(user, userId);
+
+            var mappedUser = user.ToUserProfileDto();
+
+            _cache.Set(cacheKey, mappedUser, TimeSpan.FromMinutes(5));
             
             _logger.LogInformation("User {UserId} fetched successfully", userId);
-            return user.ToUserProfileDto();
+            
+            return mappedUser;
         }
 
         public async Task ChangePasswordAsync(ResetPasswordRequest request)
@@ -75,6 +91,8 @@ namespace Camply.Application.Implementations
 
             await _userRepository.UpdateAsync(user);
             
+            _cache.Remove($"UserProfile_{request.Id}");
+            
             _logger.LogInformation("Profile updated successfully for user {UserId}", request.Id);
         }
 
@@ -95,6 +113,8 @@ namespace Camply.Application.Implementations
 
             await _userRepository.DeleteAsync(user);
             
+            _cache.Remove($"UserProfile_{request.UserId}");
+            
             _logger.LogInformation("Account deleted successfully for user {UserId}", request.UserId);
         }
 
@@ -107,6 +127,8 @@ namespace Camply.Application.Implementations
             user.Role = role;
             
             await _userRepository.UpdateAsync(user);
+            
+            _logger.LogInformation("Role changed successfully for user {UserId} on {UserRole} by administrator {AdminId}", userId, nameof(role), admin);
         }
     }
 }

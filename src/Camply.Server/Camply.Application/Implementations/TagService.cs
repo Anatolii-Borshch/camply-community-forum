@@ -2,6 +2,7 @@
 using Camply.Application.Contracts.Services;
 using Camply.Domain.Entities;
 using Camply.Shared.Dtos.Tag;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Camply.Application.Implementations
@@ -11,19 +12,33 @@ namespace Camply.Application.Implementations
         private readonly ITagRepository _tagRepository;
         
         private readonly ILogger<TagService> _logger;
+        
+        private readonly IMemoryCache _cache;
 
-        public TagService(ITagRepository tagRepository, ILogger<TagService> logger, IUserRepository userRepository) : base(userRepository, logger)
+        private const string TagsCacheKey = "all_tags";
+        public TagService(ITagRepository tagRepository, ILogger<TagService> logger
+            , IUserRepository userRepository, IMemoryCache cache) 
+            : base(userRepository, logger)
         {
             _tagRepository = tagRepository;
             _logger = logger;
+            _cache = cache;
         }
         
         public async Task<IEnumerable<TagDto>> GetTagsAsync()
         {
             _logger.LogInformation("Fetching all tags");
+
+            if (_cache.TryGetValue(TagsCacheKey, out IEnumerable<TagDto>? cachedTags))
+            {
+                _logger.LogInformation("Returned {Count} tags from cache", cachedTags.Count());
+                return cachedTags;
+            }
             
             var tags = await _tagRepository.GetAllAsync();
             var mappedTags = tags.Select(x => new TagDto(x.Id, x.Name));
+            
+            _cache.Set(TagsCacheKey, mappedTags, TimeSpan.FromMinutes(10));
             
             _logger.LogInformation("Fetched {Count} tags", mappedTags.Count());
             
@@ -50,6 +65,8 @@ namespace Camply.Application.Implementations
             };
             
             await _tagRepository.AddAsync(tag);
+            
+            _cache.Remove(TagsCacheKey);
             
             _logger.LogInformation("Tag '{TagName}' added successfully with id {TagId}", tag.Name, tag.Id);
         }
@@ -78,6 +95,8 @@ namespace Camply.Application.Implementations
             tag.Name = request.Name;
             await _tagRepository.UpdateAsync(tag);
             
+            _cache.Remove(TagsCacheKey);
+            
             _logger.LogInformation("Tag {TagId} updated successfully to '{TagName}'", tag.Id, tag.Name);
         }
 
@@ -96,6 +115,8 @@ namespace Camply.Application.Implementations
             }
             
             await _tagRepository.DeleteAsync(tag);
+            
+            _cache.Remove(TagsCacheKey);
             
             _logger.LogInformation("Tag {TagId} deleted successfully", id);
         }
