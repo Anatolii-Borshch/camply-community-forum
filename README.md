@@ -7,10 +7,10 @@
 A project created on behalf of **HYS Academy** after completing the introductory course. The system is a simplified analogue of the social forum **Reddit**.
 
 ### Entity relation and Db scheme
-![Main entities](./doc/entityrelationdig.png)
+![Main entities](./docs/entityrelationdig.png)
 
 
-![ER diagram](./doc/dbschemedig.png)
+![ER diagram](./docs/dbschemedig.png)
 
 ### Functionality
 
@@ -47,10 +47,10 @@ The unit tests currently verify:
 
 Test Coverage you can see on the picture bellow
 
-![Test Coverage](./doc/testcoverage.png)
+![Test Coverage](./docs/testcoverage.png)
 
 ### API Documentation
-Full API documentation is available [here](./doc/dist/index.html).
+Full API documentation is available [here](./docs/dist/index.html).
 
 ### Logging
 
