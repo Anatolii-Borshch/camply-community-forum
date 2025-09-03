@@ -3,6 +3,7 @@ using Camply.Application.Contracts.Security;
 using Camply.Application.Contracts.Services;
 using Camply.Application.Mappers;
 using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Camply.Shared.Dtos.User;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -95,6 +96,17 @@ namespace Camply.Application.Implementations
             await _userRepository.DeleteAsync(user);
             
             _logger.LogInformation("Account deleted successfully for user {UserId}", request.UserId);
+        }
+
+        public async Task ChangeUserRole(Guid userId, Guid adminId, UserRole role)
+        {
+            var user = await EnsureUserExistsAsync(userId);
+            var admin = await EnsureUserExistsAsync(adminId);
+            EnsureUserAcess(admin, null);
+            
+            user.Role = role;
+            
+            await _userRepository.UpdateAsync(user);
         }
     }
 }

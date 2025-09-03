@@ -1,4 +1,5 @@
-﻿using Camply.Shared.Dtos.User;
+﻿using Camply.Domain.Enums;
+using Camply.Shared.Dtos.User;
 
 namespace Camply.Application.Contracts.Services
 {
@@ -8,5 +9,6 @@ namespace Camply.Application.Contracts.Services
         Task ChangePasswordAsync(ResetPasswordRequest request);
         Task UpdateProfileAsync(ProfileUpdateRequest request);
         Task DeleteAccount(AccountDeleteRequest request);
+        Task ChangeUserRole(Guid userId, Guid adminId, UserRole role);
     }
 }
