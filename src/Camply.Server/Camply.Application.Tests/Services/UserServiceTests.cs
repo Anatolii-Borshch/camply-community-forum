@@ -5,6 +5,7 @@ using Camply.Domain.Entities;
 using Camply.Shared.Dtos.User;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -19,7 +20,8 @@ namespace Camply.Application.Tests.Services
         private readonly Mock<IValidator<AccountDeleteRequest>> _accountDeleteValidator = new();
         private readonly Mock<IPasswordHasher<User>> _passwordHasher  = new();
         private readonly UserService _service;
-
+        private readonly IMemoryCache _cache;
+        
         public UserServiceTests()
         {
             _resetPasswordValidator
@@ -34,13 +36,16 @@ namespace Camply.Application.Tests.Services
                 .Setup(v => v.ValidateAsync(It.IsAny<AccountDeleteRequest>(), default))
                 .ReturnsAsync(new ValidationResult()); 
 
+            _cache = new MemoryCache(new MemoryCacheOptions());
+            
             _service = new UserService(
                 _userRepoMock.Object,
                 _resetPasswordValidator.Object,
                 _profileUpdateValidator.Object,
                 _accountDeleteValidator.Object,
                 _passwordHasher.Object,
-                NullLogger<UserService>.Instance
+                NullLogger<UserService>.Instance,
+                _cache
                 );
         }
 
