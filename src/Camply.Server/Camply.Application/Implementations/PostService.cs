@@ -21,7 +21,7 @@ namespace Camply.Application.Implementations
         private readonly IValidator<PostUpdateRequest> _postUpdateValidator;
         
         private readonly ILogger<PostService> _logger;
-
+        
         public PostService(IPostRepository postRepository, ISpecifiedRepository<Post> specification
             , IValidator<PostCreateRequest> postCreateValidator, IValidator<PostUpdateRequest> postUpdateValidator
             , ISavedRepository savedRepository, ILikedPostRepository likedPostRepository, ICommentRepository commentRepository

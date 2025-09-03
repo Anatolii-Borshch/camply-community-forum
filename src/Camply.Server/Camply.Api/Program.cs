@@ -13,6 +13,8 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog(); 
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
