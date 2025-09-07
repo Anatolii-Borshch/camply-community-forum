@@ -82,9 +82,6 @@ namespace Camply.Application.Implementations
         {
             _logger.LogInformation("Updating post {PostId} by user {UserId}", request.PostId, request.AuthorId);
             
-            var user = await EnsureUserExistsAsync(request.AuthorId);
-            EnsureUserAcess(user, request.AuthorId);
-            
             var validationResult = _postUpdateValidator.Validate(request);
             if (!validationResult.IsValid)
             {
@@ -93,13 +90,16 @@ namespace Camply.Application.Implementations
             }
             
             var post = await _postRepository.GetByIdAsync(request.PostId);
-
-            if (post == null || post.UserId != request.AuthorId)
+            
+            if (post == null)
             {
-                _logger.LogWarning("Unauthorized update attempt by user {UserId} on post {PostId}", request.AuthorId, request.PostId);
-                throw new UnauthorizedAccessException("You cannot edit this post.");
+                _logger.LogWarning("User {AuthorId} trying to fetch un existed post {PostId}", request.AuthorId, request.PostId);
+                throw new UnauthorizedAccessException("Post does not exist");
             }
 
+            var user = await EnsureUserExistsAsync(request.AuthorId);
+            EnsureUserAcess(user, post.UserId);
+            
             post.Title = request.Title;
             post.Content = request.Description;
             post.ModifiedDate = DateTime.UtcNow;

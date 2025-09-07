@@ -1,7 +1,6 @@
 ﻿using Camply.Api.Models.Helpers;
 using Camply.Api.Models.Responses;
 using Camply.Application.Contracts.Services;
-using Camply.Security.PrivacyServices;
 using Camply.Shared.Dtos.Tag;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,13 +9,13 @@ namespace Camply.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/tag")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = RoleHelper.Admin)]
     public class TagController : ControllerBase
     {
         private readonly ITagService _tagService;
         private readonly IAuthService _authService;
         
-        public TagController(ITagService tagService, AuthService authService)
+        public TagController(ITagService tagService, IAuthService authService)
         {
             _tagService = tagService;
             _authService = authService;

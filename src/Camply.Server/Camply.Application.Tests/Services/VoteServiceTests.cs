@@ -21,6 +21,7 @@ namespace Camply.Application.Tests.Services
         private readonly Mock<IValidator<VoteUpdateRequest>> _updateValidator = new();
         private readonly Mock<IValidator<VoteOptionUpdateRequest>> _optionValidator = new();
         private readonly Mock<IUserRepository> _userRepo = new();
+        private readonly Mock<IForumRepository> _forumRepo = new();
 
         private readonly VoteService _service;
 
@@ -43,6 +44,7 @@ namespace Camply.Application.Tests.Services
                 , _userVoteRepo.Object
                 , NullLogger<VoteService>.Instance
                 , _userRepo.Object
+                , _forumRepo.Object
             );
         }
 
@@ -105,6 +107,7 @@ namespace Camply.Application.Tests.Services
                 Guid.NewGuid(),
                 new List<VoteOptionCreateDto> { new VoteOptionCreateDto("Option1") });
 
+            _forumRepo.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Forum());
             _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User());
             
             await _service.CreateVote(request);
@@ -133,9 +136,9 @@ namespace Camply.Application.Tests.Services
             var vote = new Vote { Id = Guid.NewGuid(), UserId = Guid.NewGuid(), Title = "OldTitle" };
             _voteRepo.Setup(r => r.GetByIdAsync(vote.Id)).ReturnsAsync(vote);
 
-            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId});
+            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId.Value});
             
-            var request = new VoteUpdateRequest(vote.Id, vote.UserId, "NewTitle");
+            var request = new VoteUpdateRequest(vote.Id, vote.UserId.Value, "NewTitle");
 
             await _service.UpdateVote(request);
 
@@ -175,8 +178,8 @@ namespace Camply.Application.Tests.Services
             _voteOptionRepo.Setup(r => r.GetByIdAsync(option.Id)).ReturnsAsync(option);
             _voteOptionRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<VoteOption> { option });
 
-            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId });
-            var request = new VoteOptionUpdateRequest(option.Id, vote.UserId, "New", 0);
+            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId.Value });
+            var request = new VoteOptionUpdateRequest(option.Id, vote.UserId.Value, "New", 0);
 
             await _service.UpdateVoteOption(request);
 
@@ -220,11 +223,11 @@ namespace Camply.Application.Tests.Services
                 Vote = vote,
                 UserVotes = new List<UserVote> { new UserVote(), new UserVote() }
             };
-            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId });
+            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId.Value });
             _voteOptionRepo.Setup(r => r.GetByIdAsync(option.Id)).ReturnsAsync(option);
             _voteOptionRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<VoteOption> { option });
 
-            await _service.DeleteVoteOption(option.Id, vote.UserId);
+            await _service.DeleteVoteOption(option.Id, vote.UserId.Value);
 
             _userVoteRepo.Verify(r => r.DeleteAsync(It.IsAny<UserVote>()), Times.Exactly(2));
             _voteOptionRepo.Verify(r => r.DeleteAsync(option), Times.Once);
@@ -255,11 +258,11 @@ namespace Camply.Application.Tests.Services
         {
             var vote = new Vote { Id = Guid.NewGuid(), UserId = Guid.NewGuid() };
             var option = new VoteOption { Id = Guid.NewGuid(), VoteId = vote.Id, Vote = vote };
-            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId });
+            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId.Value });
             _voteOptionRepo.Setup(r => r.GetByIdAsync(option.Id)).ReturnsAsync(option);
-            _userVoteRepo.Setup(r => r.GetByVoteAndUserAsync(vote.Id, vote.UserId)).ReturnsAsync((UserVote)null);
+            _userVoteRepo.Setup(r => r.GetByVoteAndUserAsync(vote.Id, vote.UserId.Value)).ReturnsAsync((UserVote)null);
 
-            var result = await _service.Vote(option.Id, vote.UserId);
+            var result = await _service.Vote(option.Id, vote.UserId.Value);
 
             result.ShouldBeTrue();
             _userVoteRepo.Verify(r => r.AddAsync(It.Is<UserVote>(uv => uv.OptionId == option.Id)), Times.Once);
@@ -268,11 +271,11 @@ namespace Camply.Application.Tests.Services
         [Fact]
         public async Task Vote_Should_Remove_When_SameOption()
         {
-            var vote = new Vote { Id = Guid.NewGuid() };
+            var vote = new Vote { Id = Guid.NewGuid(), UserId = Guid.NewGuid() };
             var option = new VoteOption { Id = Guid.NewGuid(), VoteId = vote.Id, Vote = vote };
             var existingVote = new UserVote { OptionId = option.Id, UserId = Guid.NewGuid() };
 
-            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId });
+            _userRepo.Setup(u => u.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new User() { Id = vote.UserId.Value });
             _voteOptionRepo.Setup(r => r.GetByIdAsync(option.Id)).ReturnsAsync(option);
             _userVoteRepo.Setup(r => r.GetByVoteAndUserAsync(vote.Id, existingVote.UserId)).ReturnsAsync(existingVote);
 

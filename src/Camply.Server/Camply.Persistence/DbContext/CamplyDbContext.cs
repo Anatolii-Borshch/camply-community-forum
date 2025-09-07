@@ -1,4 +1,5 @@
 ﻿using Camply.Domain.Entities;
+using Camply.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Camply.Persistence.DbContext
@@ -21,6 +22,21 @@ namespace Camply.Persistence.DbContext
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(CamplyDbContext).Assembly);
+            
+            //Below predefined system administrator
+            modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = Guid.Parse("D9C6EBA2-E12D-47F4-AACA-B16DE7478083"),
+                CreatedDate = DateTime.UtcNow,
+                Name = "Camply",
+                Surname = "Official",
+                Username = "camply_official",
+                Email = "camply@gmail.com",
+                PasswordHash = "10000.QiRQG5c2S/3oxJTAZKiQsQ==.c9R4j4Rp+C6h+RTla3gTGLxQE8ygG9kcGAHYGy9eMGs=", //Password: 123123ab
+                Role = UserRole.Administrator,
+                BirthDate = DateTime.UtcNow,
+            });
             
             base.OnModelCreating(modelBuilder);
         }

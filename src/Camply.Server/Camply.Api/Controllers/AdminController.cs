@@ -10,7 +10,7 @@ namespace Camply.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/admin")]
-    [Authorize(RoleHelper.Admin)]
+    [Authorize(Roles = RoleHelper.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -22,12 +22,12 @@ namespace Camply.Api.Controllers
             _userService = userService;
         }
         
-        [HttpPut("change-role")]
-        public async Task<ActionResult<ApiResponse>> ChangeUserRole([FromBody] ChangeUserRoleRequest request)
+        [HttpPut("change-role/{userToChangeId:guid}")]
+        public async Task<ActionResult<ApiResponse>> ChangeUserRole(Guid userToChangeId, [FromBody] ChangeUserRoleRequest request)
         {
             var userId = _authService.UserId;
             
-            await _userService.ChangeUserRole(request.UserId, userId, request.Role);
+            await _userService.ChangeUserRole(userToChangeId, userId, request.Role);
             
             return Ok(ApiResponse.Ok("Role changed successfully."));
         }

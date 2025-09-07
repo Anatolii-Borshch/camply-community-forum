@@ -24,14 +24,34 @@ namespace Camply.Persistence.Repositories
 
             return comments;
         }
-
+        
         public async Task<Comment?> GetByIdWithRepliesAsync(Guid id)
         {
-            return await _context.Comments
-                .Include(x => x.User)
-                .Include(x => x.Replies)
-                    .ThenInclude(x => x.User)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var root = await _context.Comments
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (root == null)
+                return null;
+
+            await LoadRepliesRecursively(root);
+
+            return root;
+        }
+
+        private async Task LoadRepliesRecursively(Comment comment)
+        {
+            var replies = await _context.Comments
+                .Where(c => c.ParentCommentId == comment.Id)
+                .Include(c => c.User)
+                .ToListAsync();
+
+            comment.Replies = replies;
+
+            foreach (var reply in replies)
+            {
+                await LoadRepliesRecursively(reply);
+            }
         }
     }
 }

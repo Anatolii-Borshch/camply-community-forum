@@ -42,22 +42,22 @@ namespace Camply.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<ApiResponse>> UpdateComment(Guid commentId, string content)
+        public async Task<ActionResult<ApiResponse>> UpdateComment(Guid id,[FromBody] string content)
         {
             var userId = _authService.UserId;
             
-            var commentRequest = new CommentUpdateRequest(userId, commentId, content);
+            var commentRequest = new CommentUpdateRequest(userId, id, content);
             await _commentService.UpdateComment(commentRequest);
             
             return Ok(ApiResponse.Ok("Comment updated successfully"));
         }
         
         [HttpDelete("{id:guid}")]
-        public async Task<ActionResult<ApiResponse>> DeleteComment(Guid commentId)
+        public async Task<ActionResult<ApiResponse>> DeleteComment(Guid id)
         {
             var userId = _authService.UserId;
             
-            await _commentService.DeleteComment(userId, commentId);
+            await _commentService.DeleteComment(id, userId);
             
             return Ok(ApiResponse.Ok("Comment deleted successfully"));
         }

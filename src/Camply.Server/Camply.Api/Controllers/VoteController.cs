@@ -81,12 +81,12 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<bool>.Ok(result, result ? "Vote added" : "Vote removed"));
         }
 
-        [HttpPatch("option")]
-        public async Task<ActionResult<ApiResponse>> UpdateVoteOption([FromBody] UpdateVoteOptionRequest request)
+        [HttpPatch("option/{id:guid}")]
+        public async Task<ActionResult<ApiResponse>> UpdateVoteOption(Guid id, [FromBody] UpdateVoteOptionRequest request)
         {
             var userId = _authService.UserId;
             var updateRequest = new VoteOptionUpdateRequest(
-                request.VoteOptionId,
+                id,
                 userId,
                 request.Name,
                 request.Index);

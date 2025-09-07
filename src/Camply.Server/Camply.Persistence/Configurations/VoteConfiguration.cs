@@ -23,12 +23,12 @@ namespace Camply.Persistence.Configurations
             builder.HasOne(x => x.Forum)
                 .WithMany(x => x.Votes)
                 .HasForeignKey(x => x.ForumId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             
             builder.HasOne(x => x.User)
                 .WithMany(x => x.Votes)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

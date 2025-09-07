@@ -152,7 +152,7 @@ namespace Camply.Application.Tests.Services
             _userRepoMock.Setup(r => r.GetByIdAsync(userId))
                 .ReturnsAsync(new User { Id = userId, Role = UserRole.Poster });
             
-            _commentRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(comment);
+            _commentRepoMock.Setup(r => r.GetByIdWithRepliesAsync(id)).ReturnsAsync(comment);
 
             await _service.DeleteComment(id, userId);
 
@@ -176,7 +176,7 @@ namespace Camply.Application.Tests.Services
             var otherUserId = Guid.NewGuid();
 
             var comment = new Comment { Id = id, UserId = authorId };
-            _commentRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(comment);
+            _commentRepoMock.Setup(r => r.GetByIdWithRepliesAsync(id)).ReturnsAsync(comment);
 
             _userRepoMock.Setup(r => r.GetByIdAsync(otherUserId))
                 .ReturnsAsync(new User { Id = otherUserId, Role = UserRole.Poster });

@@ -14,22 +14,4 @@ namespace Camply.Api.Models.Requests
         [Required] 
         public List<VoteOptionCreateDto> VoteOptions { get; set; } = new();
     }
-
-    public class UpdateVoteRequest
-    {
-        [Required]
-        public string Title { get; set; } = null!;
-    }
-
-    public class UpdateVoteOptionRequest
-    {
-        [Required] 
-        public Guid VoteOptionId { get; set; }
-        
-        [Required] 
-        public string Name { get; set; } = null!;
-        
-        [Required] 
-        public int Index { get; set; }
-    }
 }

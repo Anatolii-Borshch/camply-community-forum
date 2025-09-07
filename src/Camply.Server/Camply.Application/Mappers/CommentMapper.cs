@@ -14,6 +14,14 @@ namespace Camply.Application.Mappers
             result.TimeExisted = TimeHelper.GetTimeExisted(comment.CreatedDate);
             result.IsEdited = comment.CreatedDate == comment.ModifiedDate;
             
+            if (comment.Replies.Any())
+            {
+                result.Replies = comment.Replies
+                    .OrderBy(c => c.CreatedDate)
+                    .Select(c => c.MapToCommentDto())
+                    .ToList();
+            }
+            
             return result;
         }
     }

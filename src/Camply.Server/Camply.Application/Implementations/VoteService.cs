@@ -15,6 +15,7 @@ namespace Camply.Application.Implementations
         private readonly IVoteRepository _voteRepository;
         private readonly IVoteOptionRepository _voteOptionRepository;
         private readonly IUserVoteRepository _userVoteRepository;
+        private readonly IForumRepository _forumRepository;
         
         private readonly IValidator<VoteCreateRequest> _voteCreateValidator;
         private readonly IValidator<VoteUpdateRequest> _voteUpdateValidator;
@@ -25,7 +26,7 @@ namespace Camply.Application.Implementations
         public VoteService(IVoteRepository voteRepository, ISpecifiedRepository<Vote> specification
         , IVoteOptionRepository voteOptionRepository, IValidator<VoteCreateRequest> voteCreateValidator
         , IValidator<VoteUpdateRequest> voteUpdateValidator, IValidator<VoteOptionUpdateRequest> voteOptionUpdateValidator
-        , IUserVoteRepository userVoteRepository, ILogger<VoteService> logger, IUserRepository userRepository) : base(userRepository, logger)
+        , IUserVoteRepository userVoteRepository, ILogger<VoteService> logger, IUserRepository userRepository, IForumRepository forumRepository) : base(userRepository, logger)
         {
             _voteRepository = voteRepository;
             _specification = specification;
@@ -34,6 +35,7 @@ namespace Camply.Application.Implementations
             _voteUpdateValidator = voteUpdateValidator;
             _voteOptionUpdateValidator = voteOptionUpdateValidator;
             _userVoteRepository = userVoteRepository;
+            _forumRepository = forumRepository;
             _logger = logger;
         }
         
@@ -60,6 +62,13 @@ namespace Camply.Application.Implementations
             }
             
             await EnsureUserExistsAsync(request.AuthorId);
+            
+            var forum = await _forumRepository.GetByIdAsync(request.ForumId);
+            if (forum is null)
+            {
+                _logger.LogWarning("Forum with id {ForumId} not found", request.ForumId);
+                throw new ArgumentException($"Forum with id {request.ForumId} not found");
+            }
             
             var newVote = new Vote
             {

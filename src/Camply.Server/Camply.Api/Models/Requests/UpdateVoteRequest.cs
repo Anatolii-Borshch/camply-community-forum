@@ -2,11 +2,9 @@
 
 namespace Camply.Api.Models.Requests
 {
-    public class UpdatePostRequest
+    public class UpdateVoteRequest
     {
         [Required]
         public string Title { get; set; } = null!;
-        
-        public string? Description { get; set; }
     }
 }

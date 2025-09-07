@@ -13,8 +13,8 @@ namespace Camply.Application.Mappers
             {
                 Id = vote.Id,
                 ForumId = vote.Forum.Id,
-                AuthorId = vote.User.Id,
-                AuthorUsername = vote.User.Username,
+                AuthorId = vote.User?.Id ?? Guid.Empty,
+                AuthorUsername = vote.User?.Username ?? "Unknown",
                 Title = vote.Title,
                 IsEdited = vote.CreatedDate != vote.ModifiedDate,
                 VoteOptions = vote.VoteOptions

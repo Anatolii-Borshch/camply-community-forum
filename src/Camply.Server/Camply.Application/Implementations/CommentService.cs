@@ -98,7 +98,8 @@ namespace Camply.Application.Implementations
         {
             _logger.LogInformation("Deleting comment {CommentId} by user {UserId}", id, userId);
 
-            var comment = await _commentRepository.GetByIdAsync(id);
+            var comment = await _commentRepository.GetByIdWithRepliesAsync(id);
+
             if (comment == null)
             {
                 _logger.LogWarning("Comment {CommentId} not found for deletion", id);
@@ -108,9 +109,22 @@ namespace Camply.Application.Implementations
             var user = await EnsureUserExistsAsync(userId);
             EnsureUserAcess(user, comment.UserId);
 
-            await _commentRepository.DeleteAsync(comment);
+            await DeleteWithRepliesAsync(comment);
 
-            _logger.LogInformation("Comment {CommentId} deleted successfully", id);
+            _logger.LogInformation("Comment {CommentId} and its replies deleted successfully", id);
+        }
+
+        private async Task DeleteWithRepliesAsync(Comment comment)
+        {
+            if (comment.Replies.Any())
+            {
+                foreach (var reply in comment.Replies.ToList())
+                {
+                    await DeleteWithRepliesAsync(reply);
+                }
+            }
+
+            await _commentRepository.DeleteAsync(comment);
         }
     }
 }

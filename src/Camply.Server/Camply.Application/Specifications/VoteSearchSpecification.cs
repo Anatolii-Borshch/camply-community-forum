@@ -13,9 +13,9 @@ namespace Camply.Application.Specifications
                 (string.IsNullOrEmpty(request.Title) || x.Title.Contains(request.Title))
             )
         {
-            AddInclude(x => x.VoteOptions);
             AddInclude(x => x.User);
-
+            AddInclude(x => x.Forum);
+            
             if (!string.IsNullOrEmpty(request.OrderBy))
             {
                 if (request.OrderBy.Equals("title", StringComparison.OrdinalIgnoreCase))

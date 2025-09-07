@@ -22,6 +22,9 @@ namespace Camply.Persistence.Repositories
             foreach (var include in spec.Includes)
                 query = query.Include(include);
 
+            query.Include(x => x.VoteOptions)
+                .ThenInclude(x => x.UserVotes);
+            
             if (spec.OrderBy != null)
                 query = query.OrderBy(spec.OrderBy);
             else if (spec.OrderByDescending != null)

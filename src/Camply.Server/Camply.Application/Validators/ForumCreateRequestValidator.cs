@@ -18,7 +18,6 @@ namespace Camply.Application.Validators
                 .NotEmpty().WithMessage("Title is required")
                 .MinimumLength(5).WithMessage("Title must be at least 5 characters")
                 .MaximumLength(200).WithMessage("Title must be at most 200 characters")
-                .Must(title => !title.All(char.IsLetter)).WithMessage("Title cannot consist only of letters")
                 .MustAsync(async (title, cancellation) => !await TitleExistsAsync(title))
                 .WithMessage("A forum with this title already exists");
 

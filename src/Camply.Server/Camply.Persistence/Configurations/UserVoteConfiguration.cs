@@ -15,7 +15,7 @@ namespace Camply.Persistence.Configurations
             builder.HasOne(x => x.User)
                 .WithMany(x => x.UserVotes)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             
             builder.HasOne(x => x.Option)
                 .WithMany(x => x.UserVotes)
