@@ -71,7 +71,7 @@ Test Coverage you can see on the picture bellow
 ![Test Coverage](./docs/testcoverage.png)
 
 ### API Documentation
-Full API documentation is available [here](./docs/dist/index.html).
+Full API documentation is available [here](https://anatolii-borshch.github.io/camply-community-forum/).
 
 ### Logging
 
