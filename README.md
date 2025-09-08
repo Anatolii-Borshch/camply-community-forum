@@ -3,6 +3,27 @@
 
 ### Setup
 
+```bash
+git clone <*current repo link*>
+cd camply-community-forum/src/Camply.Server
+dotnet restore
+dotnet ef migrations add InitialMigration --project .\Camply.Persistence\ -- "Your database connection string"
+```
+
+> Then fill appsettings.json file in API project.
+
+```bash
+dotnet run --project Camply.Api
+```
+
+> Do not worry: the migration context factory will apply the schema automatically.
+
+A predefined administrator account is available.
+
+Credentials:
+- Username: camply_official
+- Password: 123123ab
+
 ### Description
 A project created on behalf of **HYS Academy** after completing the introductory course. The system is a simplified analogue of the social forum **Reddit**.
 
@@ -35,7 +56,7 @@ Security is ensured through a role-based system, standard **ASP.NET authorizatio
 
 The built-in **IMemoryCache** service is used for caching. The strategy focuses on static or rarely changing data, such as tags and user profiles. For more dynamic or highly specific queries, caching is intentionally not applied to ensure up-to-date results.
 
-### Test Metrics
+### Testing
 
 Unit tests were implemented to cover all the core business logic and ensure that it complies with the defined business rules. The main data processing layer is not yet covered, as it requires **integration tests**.
 
@@ -63,6 +84,7 @@ In the future plan:
 - Integrate ASP.NET Identity and related authentication/authorization services.
 - Add email services for email confirmation and notifications.
 - Implement integration tests to cover the main data processing layer and external dependencies.
+- Add system for reports and modaration.
 
 ### Dependencies
 
@@ -86,7 +108,7 @@ In the future plan:
 - "Microsoft.EntityFrameworkCore" Version="8.0.18" 
 - "Microsoft.EntityFrameworkCore.Proxies" Version="8.0.18" 
 - "Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.18" 
-- "Microsoft.EntityFrameworkCore.Tools" Version="8.0.18">
+- "Microsoft.EntityFrameworkCore.Tools" Version="8.0.18"
       
 - "Microsoft.Extensions.Configuration" Version="9.0.8" 
 - "Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.8" 
