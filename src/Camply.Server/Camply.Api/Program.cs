@@ -21,6 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 
+builder.Services.AddSwaggerDocumentation();
 builder.Services.AddBearerSecurityScheme();
 
 builder.Services.AddSecurityServices(builder.Configuration);

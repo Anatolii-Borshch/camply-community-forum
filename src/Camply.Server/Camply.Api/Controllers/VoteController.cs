@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Camply.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing forum votes and vote options.
+    /// </summary>
     [ApiController]
     [Route("api/v1/vote")]
     public class VoteController : ControllerBase
@@ -19,6 +22,18 @@ namespace Camply.Api.Controllers
             _authService = authService;
         }
         
+        /// <summary>
+        /// Retrieves a list of votes with optional filters.
+        /// </summary>
+        /// <param name="forumId">Filter by forum ID (optional).</param>
+        /// <param name="authorId">Filter by author ID (optional).</param>
+        /// <param name="voteId">Filter by vote ID (optional).</param>
+        /// <param name="title">Filter by vote title (optional).</param>
+        /// <param name="skip">Number of records to skip for pagination (default = 0).</param>
+        /// <param name="take">Number of records to return (default = 20).</param>
+        /// <param name="orderBy">Property name to order results by (optional).</param>
+        /// <param name="orderDescending">Whether to order results descending (default = false).</param>
+        /// <returns>List of votes.</returns>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<VoteDto>>>> GetVotes(
             [FromQuery] Guid? forumId,
@@ -39,6 +54,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<IEnumerable<VoteDto>>.Ok(votes));
         }
 
+        /// <summary>
+        /// Creates a new vote in a forum.
+        /// </summary>
+        /// <param name="request">Vote creation request containing title, forum ID, and options.</param>
+        /// <returns>Success message.</returns>
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateVote([FromBody] CreateVoteRequest request)
         {
@@ -50,6 +70,12 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Vote created successfully"));
         }
 
+        /// <summary>
+        /// Updates an existing vote.
+        /// </summary>
+        /// <param name="id">Vote ID.</param>
+        /// <param name="request">Update request containing new title.</param>
+        /// <returns>Success message.</returns>
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> UpdateVote(Guid id, [FromBody] UpdateVoteRequest request)
         {
@@ -61,6 +87,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Vote updated successfully"));
         }
 
+        /// <summary>
+        /// Deletes a vote by ID.
+        /// </summary>
+        /// <param name="id">Vote ID.</param>
+        /// <returns>Success message.</returns>
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> DeleteVote(Guid id)
         {
@@ -71,6 +102,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Vote deleted successfully"));
         }
 
+        /// <summary>
+        /// Toggles a user's vote for a specific option.
+        /// </summary>
+        /// <param name="optionId">Vote option ID.</param>
+        /// <returns>True if vote was added, false if removed.</returns>
         [HttpPatch("{optionId:guid}/toggle")]
         public async Task<ActionResult<ApiResponse<bool>>> ToggleVote(Guid optionId)
         {
@@ -81,6 +117,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<bool>.Ok(result, result ? "Vote added" : "Vote removed"));
         }
 
+        /// <summary>
+        /// Updates a vote option.
+        /// </summary>
+        /// <param name="id">Vote option ID.</param>
+        /// <param name="request">Request containing updated name and index.</param>
         [HttpPatch("option/{id:guid}")]
         public async Task<ActionResult<ApiResponse>> UpdateVoteOption(Guid id, [FromBody] UpdateVoteOptionRequest request)
         {
@@ -96,6 +137,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Vote option updated successfully"));
         }
 
+        /// <summary>
+        /// Deletes a vote option by ID.
+        /// </summary>
+        /// <param name="id">Vote option ID.</param>
+        /// <returns>Success message.</returns>ч
         [HttpDelete("option/{id:guid}")]
         public async Task<ActionResult<ApiResponse>> DeleteVoteOption(Guid id)
         {

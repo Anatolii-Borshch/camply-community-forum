@@ -9,6 +9,9 @@ using RegisterRequest = Camply.Api.Models.Requests.RegisterRequest;
 
 namespace Camply.Api.Controllers
 {
+    /// <summary>
+    /// Controller responsible for authentication operations.
+    /// </summary>
     [ApiController]
     [Route("api/v1/auth")]
     [AllowAnonymous]
@@ -21,6 +24,24 @@ namespace Camply.Api.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Logs in a user using username/email and password.
+        /// </summary>
+        /// <param name="request">Login credentials.</param>
+        /// <returns>An <see cref="ApiResponse{LoginData}"/> containing JWT and user info.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/v1/auth/login
+        ///     {
+        ///        "username": "user1",
+        ///        "email": "user1@example.com",
+        ///        "password": "password123"
+        ///     }
+        /// </remarks>
+        /// <response code="200">Login successful, returns <see cref="ApiResponse{LoginData}"/></response>
+        /// <response code="400">Validation failed, returns <see cref="ApiResponse.Errors"/></response>
+        /// <response code="401">Invalid credentials</response>
         [HttpPost("login")]
         public async Task<ActionResult<ApiResponse<LoginData>>> Login([FromBody] LoginRequest request)
         {
@@ -31,6 +52,26 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<LoginData>.Ok(loginData));
         }
 
+        /// <summary>
+        /// Registers a new user.
+        /// </summary>
+        /// <param name="request">User registration details.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/v1/auth/register
+        ///     {
+        ///        "name": "John",
+        ///        "surname": "Doe",
+        ///        "username": "johndoe",
+        ///        "email": "john@example.com",
+        ///        "password": "password123",
+        ///        "birthDate": "1990-01-01"
+        ///     }
+        /// </remarks>
+        /// <response code="200">Registration successful</response>
+        /// <response code="400">Validation failed, returns <see cref="ApiResponse.Errors"/></response>
         [HttpPost("register")]
         public async Task<ActionResult<ApiResponse>> Register([FromBody] RegisterRequest request)
         {
@@ -41,6 +82,11 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("User registered successfully"));
         }
 
+        /// <summary>
+        /// Logs out the current user.
+        /// </summary>
+        /// <returns>An <see cref="ApiResponse"/> confirming logout.</returns>
+        /// <response code="200">Logout successful</response>
         [HttpPost("logout")]
         public async Task<ActionResult<ApiResponse>> Logout()
         {

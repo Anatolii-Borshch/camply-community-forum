@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Camply.Api.Controllers
 {
+    /// <summary>
+    /// Admin operations controller
+    /// </summary>
     [ApiController]
     [Route("api/v1/admin")]
     [Authorize(Roles = RoleHelper.Admin)]
@@ -22,6 +25,16 @@ namespace Camply.Api.Controllers
             _userService = userService;
         }
         
+        /// <summary>
+        /// Change the role of a user.
+        /// </summary>
+        /// <param name="userToChangeId">The ID of the user whose role is being changed.</param>
+        /// <param name="request">Contains the new role to assign.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <response code="200">Returns success with <see cref="ApiResponse.Success"/> = true</response>
+        /// <response code="400">Returns validation failure with <see cref="ApiResponse.Errors"/></response>
+        /// <response code="401">Unauthorized access</response>
+        /// <response code="403">Forbidden (user is not admin)</response>
         [HttpPut("change-role/{userToChangeId:guid}")]
         public async Task<ActionResult<ApiResponse>> ChangeUserRole(Guid userToChangeId, [FromBody] ChangeUserRoleRequest request)
         {

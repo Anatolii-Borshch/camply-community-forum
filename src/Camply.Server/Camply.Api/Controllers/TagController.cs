@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Camply.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing tags.
+    /// </summary>
     [ApiController]
     [Route("api/v1/tag")]
     [Authorize(Roles = RoleHelper.Admin)]
@@ -21,6 +24,13 @@ namespace Camply.Api.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Retrieves all available tags.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ApiResponse{IEnumerable{TagDto}}"/> containing the list of tags.
+        /// </returns>
+        /// <response code="200">Returns the list of tags</response>
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<IEnumerable<TagDto>>>> GetTags()
@@ -30,6 +40,19 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<IEnumerable<TagDto>>.Ok(tags));
         }
 
+        /// <summary>
+        /// Creates a new tag.
+        /// </summary>
+        /// <param name="name">Name of the new tag.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/v1/tag
+        ///     "CSharp"
+        /// 
+        /// </remarks>
+        /// <response code="200">Tag created successfully</response>
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateTag([FromBody] string name)
         {
@@ -40,6 +63,20 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Tag created"));
         }
 
+        /// <summary>
+        /// Updates an existing tag.
+        /// </summary>
+        /// <param name="id">ID of the tag to update.</param>
+        /// <param name="name">Updated name of the tag.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     PUT /api/v1/tag/{id}
+        ///     "DotNet"
+        /// 
+        /// </remarks>
+        /// <response code="200">Tag updated successfully</response>
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> UpdateTag(Guid id, [FromBody] string name)
         {
@@ -52,6 +89,12 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Tag updated"));
         }
 
+        /// <summary>
+        /// Deletes a tag by ID.
+        /// </summary>
+        /// <param name="id">ID of the tag to delete.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <response code="200">Tag deleted successfully</response>
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<ApiResponse>> DeleteTag(Guid id)
         {

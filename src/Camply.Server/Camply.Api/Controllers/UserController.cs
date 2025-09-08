@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Camply.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing user accounts and profiles.
+    /// </summary>
     [ApiController]
     [Route("api/v1/user")]
     [Authorize(Roles = RoleHelper.Poster + "," + RoleHelper.Admin)]
@@ -22,6 +25,14 @@ namespace Camply.Api.Controllers
             _authService = authService;
         }
         
+        /// <summary>
+        /// Retrieves the profile of a specific user by ID.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{UserProfileDto}"/> containing the user profile.
+        /// </returns>
+        /// <response code="200">Returns the user profile</response>
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetUserProfile(Guid id)
         {
@@ -30,6 +41,13 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(profile));
         }
         
+        /// <summary>
+        /// Retrieves the profile of the currently authenticated user.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ApiResponse{UserProfileDto}"/> containing the current user profile.
+        /// </returns>
+        /// <response code="200">Returns the authenticated user's profile</response>
         [HttpGet("profile")]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetProfile()
         {
@@ -40,6 +58,23 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse<UserProfileDto>.Ok(profile));
         }
 
+        /// <summary>
+        /// Updates the profile of the currently authenticated user.
+        /// </summary>
+        /// <param name="request">The profile update request.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     PUT /api/v1/user
+        ///     {
+        ///         "name": "John",
+        ///         "surname": "Doe",
+        ///         "birthday": "1995-05-12",
+        ///         "username": "john_doe"
+        ///     }
+        /// </remarks>
+        /// <response code="200">Profile updated successfully</response>
         [HttpPut]
         public async Task<ActionResult<ApiResponse>> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
@@ -56,6 +91,20 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Profile updated successfully"));
         }
 
+        /// <summary>
+        /// Changes the password of the currently authenticated user.
+        /// </summary>
+        /// <param name="request">The change password request.</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     PUT /api/v1/user/password
+        ///     {
+        ///         "password": "newStrongPassword123"
+        ///     }
+        /// </remarks>
+        /// <response code="200">Password changed successfully</response>
         [HttpPut("password")]
         public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordRequest request)
         {
@@ -67,6 +116,20 @@ namespace Camply.Api.Controllers
             return Ok(ApiResponse.Ok("Password changed successfully"));
         }
 
+        /// <summary>
+        /// Deletes the currently authenticated user's account.
+        /// </summary>
+        /// <param name="request">The delete account request (requires password confirmation).</param>
+        /// <returns>An <see cref="ApiResponse"/> indicating success or failure.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     DELETE /api/v1/user
+        ///     {
+        ///         "password": "userPassword123"
+        ///     }
+        /// </remarks>
+        /// <response code="200">Account deleted successfully</response>
         [HttpDelete]
         public async Task<ActionResult<ApiResponse>> DeleteAccount([FromBody] DeleteAccountRequest request)
         {
